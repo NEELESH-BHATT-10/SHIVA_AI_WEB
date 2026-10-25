@@ -1,19 +1,18 @@
-import os
-import secrets
+ import os
+import time
+from pathlib import Path
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 app = FastAPI(title="SHIVA AI")
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434")
-MODEL_NAME = os.getenv("OLLAMA_MODEL", "llama3.2")
-ACCESS_CODE = os.getenv("SHIVA_ACCESS_CODE", "")
+API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+MODEL = "openrouter/free"
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Simple in-memory rate limit for this single-process starter.
 _requests = {}
 
 
@@ -23,65 +22,77 @@ class ChatRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
-    try:
-        with open("index.html", "r", encoding="utf-8") as file:
-            return file.read()
-    except OSError:
-        raise HTTPException(500, "Could not find index.html in the project folder.")
+    path = Path(__file__).parent / "index.html"
+    if not path.exists():
+        raise HTTPException(status_code=500, detail="index.html not found")
+    return path.read_text(encoding="utf-8")
 
 
 @app.post("/api/chat")
 async def chat(body: ChatRequest, request: Request):
-    client_ip = request.client.host if request.client else "unknown"
+    if not API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="OPENROUTER_API_KEY is missing from Render environment variables."
+        )
 
-    # Basic rate limit: 20 requests per minute per client.
-    now = __import__("time").time()
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
     recent = [t for t in _requests.get(client_ip, []) if now - t < 60]
 
-    if len(recent) >= 20:
-        raise HTTPException(429, "Too many requests. Please wait a minute.")
+    if len(recent) >= 10:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many requests. Please wait a minute."
+        )
 
     recent.append(now)
     _requests[client_ip] = recent
 
-    if ACCESS_CODE:
-        supplied = request.headers.get("x-shiva-access-code", "")
-        if not secrets.compare_digest(supplied, ACCESS_CODE):
-            raise HTTPException(401, "Invalid access code.")
-
     try:
-        async with httpx.AsyncClient(timeout=120) as client:
+        async with httpx.AsyncClient(timeout=90) as client:
             response = await client.post(
-                f"{OLLAMA_URL.rstrip('/')}/api/chat",
+                API_URL,
+                headers={
+                    "Authorization": f"Bearer {API_KEY}",
+                    "Content-Type": "application/json",
+                    "X-Title": "SHIVA AI",
+                },
                 json={
-                    "model": MODEL_NAME,
+                    "model": MODEL,
                     "messages": [
                         {
                             "role": "system",
                             "content": (
-                                "You are SHIVA, a helpful personal AI assistant. "
-                                "Respond clearly and concisely in English."
+                                "You are SHIVA AI, a helpful assistant. "
+                                "Respond clearly, respectfully, and concisely."
                             ),
                         },
                         {"role": "user", "content": body.message},
                     ],
-                    "stream": False,
                 },
             )
-            response.raise_for_status()
-            data = response.json()
 
-        answer = data.get("message", {}).get("content", "")
+        if response.is_error:
+            print("OpenRouter error:", response.status_code, response.text[:1000])
+            raise HTTPException(
+                status_code=502,
+                detail=f"OpenRouter request failed (HTTP {response.status_code}). Check the server logs and model availability."
+            )
+
+        data = response.json()
+        answer = data["choices"][0]["message"]["content"]
+
         if not answer:
-            raise HTTPException(502, "Ollama returned an empty response.")
+            raise HTTPException(status_code=502, detail="The AI returned an empty response.")
 
         return {"reply": answer}
 
     except HTTPException:
         raise
-    except httpx.HTTPError:
+    except (httpx.HTTPError, ValueError, KeyError, IndexError):
         raise HTTPException(
-            502,
-            "Could not connect to Ollama. Check that Ollama is running and the model is installed.",
+            status_code=502,
+            detail="Could not get a response from OpenRouter. Check Render logs and free-model availability."
         )
 
