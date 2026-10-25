@@ -1,0 +1,807 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#020807">
+
+<title>SHIVA AI by Neelesh Bhatt</title>
+
+<style>
+:root {
+    --green: #00ff88;
+    --blue: #00bfff;
+    --red: #ff304f;
+    --black: #020807;
+    --panel: rgba(3, 17, 18, .94);
+    --border: rgba(0, 255, 136, .25);
+    --text: #d7fff0;
+    --muted: #70a99a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background:
+        radial-gradient(ellipse at 50% 0%, #06322b 0%, transparent 55%),
+        var(--black);
+    font-family: Consolas, "Courier New", monospace;
+    overflow-x: hidden;
+}
+
+#matrix {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .17;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.scanlines {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: .12;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        transparent 3px,
+        #00ff88 4px
+    );
+}
+
+header, main, footer {
+    position: relative;
+    z-index: 2;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 20px 5%;
+    background: rgba(1, 8, 8, .92);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 25px #00ff8810;
+}
+
+.brand {
+    color: var(--red);
+    font-size: clamp(23px, 4vw, 34px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow: 0 0 12px #ff304f80;
+}
+
+.creator {
+    color: var(--red);
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-top: 8px;
+    text-shadow: 0 0 8px #ff304f55;
+}
+
+.tagline {
+    color: var(--green);
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: 8px;
+}
+
+.live-status {
+    color: var(--green);
+    font-size: 11px;
+    border: 1px solid #00ff8850;
+    padding: 10px 13px;
+    border-radius: 5px;
+}
+
+.live-status::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--green);
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: .25; }
+}
+
+main {
+    width: min(1250px, 94%);
+    margin: 25px auto;
+}
+
+.system-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.strip-item {
+    background: #061411e8;
+    border: 1px solid var(--border);
+    padding: 12px;
+    text-align: center;
+}
+
+.strip-label {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.strip-value {
+    color: var(--green);
+    font-size: 12px;
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 18px;
+    align-items: stretch;
+}
+
+.panel {
+    min-width: 0;
+    padding: 19px;
+    border: 1px solid var(--border);
+    background: linear-gradient(145deg, #071715f5, #020b0cf5);
+    box-shadow: 0 0 25px #00ff8808;
+    border-radius: 8px;
+}
+
+.panel-title {
+    color: var(--green);
+    font-size: 12px;
+    letter-spacing: 2px;
+    padding-bottom: 13px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.radar-wrap {
+    display: grid;
+    place-items: center;
+    padding: 10px 0 18px;
+}
+
+.radar {
+    position: relative;
+    width: min(330px, 75vw);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #00bfff9c;
+    background-color: #031522;
+    background-image:
+        linear-gradient(#00bfff24 1px, transparent 1px),
+        linear-gradient(90deg, #00bfff24 1px, transparent 1px),
+        repeating-radial-gradient(
+            circle,
+            transparent 0 34px,
+            #00bfff4d 35px 36px
+        ),
+        linear-gradient(90deg, transparent 49.8%, #00bfff70 50%, transparent 50.2%),
+        linear-gradient(transparent 49.8%, #00bfff70 50%, transparent 50.2%);
+    background-size: 22px 22px, 22px 22px, auto, auto, auto;
+    box-shadow:
+        0 0 22px #00bfff32,
+        inset 0 0 35px #00bfff22;
+}
+
+.radar-sweep {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 275deg,
+        #00bfff08 305deg,
+        #00bfff3b 345deg,
+        #00d5ff9c 359deg,
+        transparent 360deg
+    );
+    animation: radar-spin 4s linear infinite;
+}
+
+@keyframes radar-spin {
+    to { transform: rotate(360deg); }
+}
+
+.radar-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px 5px var(--blue);
+    z-index: 3;
+}
+
+.target {
+    position: absolute;
+    z-index: 4;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--red);
+    border: 2px solid #ffb0bc;
+    box-shadow: 0 0 13px 4px #ff304f90;
+    animation: target-pulse 1.6s ease-in-out infinite alternate;
+}
+
+.target::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border: 1px solid #ff304f8c;
+    border-radius: 50%;
+}
+
+.target.t1 { left: 70%; top: 26%; }
+.target.t2 { left: 29%; top: 63%; animation-delay: .5s; }
+.target.t3 { left: 74%; top: 72%; animation-delay: 1s; }
+
+@keyframes target-pulse {
+    from { opacity: .45; transform: scale(.75); }
+    to { opacity: 1; transform: scale(1.15); }
+}
+
+.radar-caption {
+    color: var(--blue);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.radar-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 12px;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    background: var(--red);
+    box-shadow: 0 0 7px var(--red);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 12px;
+}
+
+.stat {
+    border: 1px solid #174035;
+    padding: 12px;
+    background: #03100d;
+}
+
+.stat-name {
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    color: var(--green);
+    font-size: 12px;
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 590px;
+}
+
+.chat-log {
+    flex: 1;
+    min-height: 280px;
+    max-height: 450px;
+    overflow-y: auto;
+    padding: 5px 3px 15px;
+    scrollbar-color: #12674c #03100d;
+}
+
+.message {
+    padding: 12px;
+    margin-bottom: 13px;
+    background: #051511;
+    border-left: 2px solid var(--green);
+    border-radius: 0 6px 6px 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    line-height: 1.65;
+    font-size: 13px;
+}
+
+.message.user {
+    border-left-color: var(--blue);
+    background: #04121b;
+}
+
+.message.error {
+    border-left-color: var(--red);
+}
+
+.message-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 7px;
+}
+
+.message.user .message-label {
+    color: var(--blue);
+}
+
+.message.error .message-label {
+    color: var(--red);
+}
+
+.controls {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+input, button {
+    font-family: inherit;
+    font-size: 13px;
+}
+
+input {
+    width: 100%;
+    min-width: 0;
+    padding: 13px;
+    color: var(--text);
+    background: #020b09;
+    border: 1px solid #1b4a3b;
+    border-radius: 5px;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 10px #00ff881b;
+}
+
+.access-row {
+    margin-bottom: 9px;
+}
+
+.input-row {
+    display: flex;
+    gap: 8px;
+}
+
+button {
+    min-height: 44px;
+    padding: 0 17px;
+    color: var(--green);
+    background: #05271d;
+    border: 1px solid var(--green);
+    border-radius: 5px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #07442f;
+    box-shadow: 0 0 15px #00ff8822;
+}
+
+button:disabled {
+    opacity: .55;
+    cursor: wait;
+}
+
+.hint {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+footer {
+    text-align: center;
+    padding: 22px 12px 30px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 2px;
+    line-height: 2;
+}
+
+footer .free {
+    color: var(--green);
+}
+
+footer .author {
+    color: var(--red);
+}
+
+@media (max-width: 800px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .chat-panel {
+        min-height: 500px;
+    }
+
+    .chat-log {
+        max-height: 360px;
+    }
+}
+
+@media (max-width: 420px) {
+    header { padding: 16px 4%; }
+    main { width: 94%; }
+    .panel { padding: 13px; }
+    .system-strip { gap: 5px; }
+    .strip-item { padding: 9px 4px; }
+    .strip-label { font-size: 8px; letter-spacing: 1px; }
+    .strip-value { font-size: 10px; }
+    .input-row { flex-direction: column; }
+    button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+</style>
+</head>
+
+<body>
+<canvas id="matrix" aria-hidden="true"></canvas>
+<div class="scanlines" aria-hidden="true"></div>
+
+<header>
+    <div>
+        <div class="brand">SHIVA AI</div>
+        <div class="creator">BY NEELESH BHATT</div>
+        <div class="tagline">HACKER AESTHETIC · NAVAL RADAR · AI CORE</div>
+    </div>
+    <div class="live-status">INTERFACE ACTIVE</div>
+</header>
+
+<main>
+    <section class="system-strip">
+        <div class="strip-item">
+            <div class="strip-label">SYSTEM</div>
+            <div class="strip-value">SHIVA CORE</div>
+        </div>
+        <div class="strip-item">
+            <div class="strip-label">RADAR</div>
+            <div class="strip-value">BLUE / RED TARGETS</div>
+        </div>
+        <div class="strip-item">
+            <div class="strip-label">AI CONNECTION</div>
+            <div class="strip-value" id="connection">NOT TESTED</div>
+        </div>
+    </section>
+
+    <div class="dashboard">
+        <section class="panel">
+            <div class="panel-title">01 // NAVAL RADAR SYSTEM</div>
+
+            <div class="radar-wrap">
+                <div class="radar" role="img"
+                     aria-label="Animated blue naval-style radar with pulsing red targets">
+                    <div class="radar-sweep"></div>
+                    <div class="radar-center"></div>
+                    <div class="target t1"></div>
+                    <div class="target t2"></div>
+                    <div class="target t3"></div>
+                </div>
+
+                <div class="radar-caption">
+                    SCANNING · TARGET TRACKING SIMULATION
+                </div>
+
+                <div class="radar-legend">
+                    <span><i class="legend-dot"></i>SIMULATED TARGET</span>
+                    <span style="color:var(--blue)">● RADAR SWEEP</span>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-name">AI ENGINE</div>
+                    <div class="stat-value">OLLAMA</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-name">MODEL</div>
+                    <div class="stat-value">LLAMA 3.2*</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-name">INTERFACE</div>
+                    <div class="stat-value">MATRIX GREEN</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-name">NETWORK</div>
+                    <div class="stat-value" id="networkStatus">LOCAL SERVER</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel chat-panel">
+            <div class="panel-title">02 // SHIVA AI COMMUNICATION</div>
+
+            <div class="chat-log" id="chatLog" aria-live="polite">
+                <div class="message">
+                    <div class="message-label">SHIVA CORE</div>
+                    System initialized.
+                    Welcome to SHIVA AI by Neelesh Bhatt.
+                    Enter your question below to begin.
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="access-row">
+                    <input
+                        id="accessCode"
+                        type="password"
+                        placeholder="Access code (only if configured)"
+                        autocomplete="off"
+                        aria-label="Access code"
+                    >
+                </div>
+
+                <form id="chatForm">
+                    <div class="input-row">
+                        <input
+                            id="messageInput"
+                            type="text"
+                            maxlength="4000"
+                            placeholder="Ask SHIVA anything..."
+                            autocomplete="off"
+                            required
+                            aria-label="Your question"
+                        >
+                        <button id="sendButton" type="submit">SEND ↗</button>
+                    </div>
+                </form>
+
+                <div class="hint">
+                    *The model label is informational; the backend configuration
+                    determines which model answers. Radar targets are decorative
+                    simulations, not real-world tracking data.
+                    Do not enter passwords or sensitive personal information.
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer>
+    <div class="free">FREE AI INTERFACE · BUILT WITH OPEN-SOURCE TOOLS</div>
+    <div class="author">SHIVA AI BY NEELESH BHATT</div>
+    <div>GREEN MATRIX · BLUE NAVAL RADAR · BLACK SYSTEMS</div>
+</footer>
+
+<script>
+/* MATRIX RAIN BACKGROUND */
+(() => {
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const chars = "01アイウエオカキクケコSHIVA";
+    const fontSize = 14;
+    let columns = 0;
+    let drops = [];
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        columns = Math.ceil(width / fontSize);
+        drops = Array.from(
+            { length: columns },
+            () => Math.random() * (height / fontSize)
+        );
+    }
+
+    function draw() {
+        ctx.fillStyle = "rgba(2, 8, 7, 0.12)";
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = "#00ff88";
+        ctx.font = fontSize + "px monospace";
+
+        for (let i = 0; i < drops.length; i++) {
+            const char = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > height && Math.random() > .975) {
+                drops[i] = 0;
+            } else {
+                drops[i] += .45;
+            }
+        }
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    if (reducedMotion) {
+        draw();
+    } else {
+        setInterval(() => {
+            frame++;
+            if (frame % 2 === 0) draw();
+        }, 45);
+    }
+})();
+
+/* AI CHAT WITH TYPEWRITER RESPONSE */
+const form = document.getElementById("chatForm");
+const input = document.getElementById("messageInput");
+const accessCode = document.getElementById("accessCode");
+const chatLog = document.getElementById("chatLog");
+const sendButton = document.getElementById("sendButton");
+const connection = document.getElementById("connection");
+const networkStatus = document.getElementById("networkStatus");
+
+function addMessage(label, text, type = "") {
+    const box = document.createElement("div");
+    box.className = "message " + type;
+
+    const heading = document.createElement("div");
+    heading.className = "message-label";
+    heading.textContent = label;
+
+    const content = document.createElement("div");
+    content.textContent = text;
+
+    box.append(heading, content);
+    chatLog.appendChild(box);
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    return content;
+}
+
+function typeText(element, text) {
+    return new Promise(resolve => {
+        const reducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        if (reducedMotion || text.length > 12000) {
+            element.textContent = text;
+            chatLog.scrollTop = chatLog.scrollHeight;
+            resolve();
+            return;
+        }
+
+        let index = 0;
+        const step = 3;
+
+        function next() {
+            index = Math.min(index + step, text.length);
+            element.textContent = text.slice(0, index);
+            chatLog.scrollTop = chatLog.scrollHeight;
+
+            if (index < text.length) {
+                setTimeout(next, 12);
+            } else {
+                resolve();
+            }
+        }
+
+        next();
+    });
+}
+
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const message = input.value.trim();
+    if (!message || sendButton.disabled) return;
+
+    addMessage("YOU", message, "user");
+    input.value = "";
+    sendButton.disabled = true;
+    sendButton.textContent = "THINKING...";
+
+    const replyElement = addMessage("SHIVA CORE", "Connecting to AI...");
+
+    try {
+        const headers = { "Content-Type": "application/json" };
+        const code = accessCode.value.trim();
+
+        if (code) {
+            headers["X-SHIVA-ACCESS-CODE"] = code;
+        }
+
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "The AI request failed.");
+        }
+
+        connection.textContent = "CONNECTED";
+        networkStatus.textContent = "AI REACHABLE";
+
+        replyElement.textContent = "";
+        await typeText(
+            replyElement,
+            data.reply || "The AI returned an empty response."
+        );
+
+    } catch (error) {
+        replyElement.textContent =
+            "CONNECTION ERROR: " + error.message +
+            "\n\nCheck that the backend server and Ollama are running.";
+
+        const box = replyElement.closest(".message");
+        if (box) box.classList.add("error");
+
+        connection.textContent = "OFFLINE";
+        networkStatus.textContent = "CHECK SERVER";
+
+    } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = "SEND ↗";
+        input.focus();
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+});
+</script>
+</body>
+</html>
