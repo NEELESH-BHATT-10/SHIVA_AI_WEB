@@ -1,4 +1,4 @@
- import os
+import os
 import time
 from pathlib import Path
 
@@ -77,14 +77,17 @@ async def chat(body: ChatRequest, request: Request):
             print("OpenRouter error:", response.status_code, response.text[:1000])
             raise HTTPException(
                 status_code=502,
-                detail=f"OpenRouter request failed (HTTP {response.status_code}). Check the server logs and model availability."
+                detail=f"OpenRouter request failed (HTTP {response.status_code}). Check server logs and model availability."
             )
 
         data = response.json()
         answer = data["choices"][0]["message"]["content"]
 
         if not answer:
-            raise HTTPException(status_code=502, detail="The AI returned an empty response.")
+            raise HTTPException(
+                status_code=502,
+                detail="The AI returned an empty response."
+            )
 
         return {"reply": answer}
 
