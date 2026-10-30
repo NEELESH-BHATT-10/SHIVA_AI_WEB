@@ -1,1022 +1,504 @@
- <!DOCTYPE html>
+ /* INDIA-ONLY BHARAT EXPLORER */
 
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SHIVA AI | Neelesh Bhatt</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
-<style>
-:root {
-    --green:#00ff66;
-    --red:#ff2020;
-    --bg:#020704;
-    --panel:rgba(0,20,8,.94);
-    --border:rgba(0,255,102,.35);
-}
-*{box-sizing:border-box}
-body{
-    margin:0;background:var(--bg);color:var(--green);
-    font-family:Consolas,monospace;min-height:100vh;
-}
-body::before{
-    content:"";position:fixed;inset:0;pointer-events:none;
-    opacity:.12;z-index:5;
-    background:repeating-linear-gradient(transparent 0,transparent 3px,rgba(0,255,80,.18) 4px);
-}
-header{text-align:center;padding:22px 12px;border-bottom:1px solid var(--border)}
-header h1{color:var(--red);letter-spacing:5px;margin:0;font-size:clamp(25px,5vw,42px);text-shadow:0 0 14px var(--red)}
-header p{margin-bottom:0}
-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:14px}
-button{cursor:pointer;font-family:inherit}
-nav button,.action{
-    color:var(--green);background:#03140a;border:1px solid var(--green);
-    padding:10px 15px;border-radius:5px;
-}
-nav button:hover,.action:hover{background:var(--green);color:black}
-main{max-width:1050px;margin:auto;padding:15px}
-.panel{
-    background:var(--panel);border:1px solid var(--border);
-    border-radius:10px;padding:18px;margin-bottom:18px;
-    box-shadow:0 0 15px rgba(0,255,102,.07);
-}
-h2{color:var(--red);margin-top:0}
-.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;align-items:center}
-.radar-wrap{display:flex;align-items:center;justify-content:center}
-.radar{
-    width:190px;height:190px;border:2px solid var(--green);
-    border-radius:50%;position:relative;overflow:hidden;
-    background:
-    linear-gradient(90deg,transparent 49.5%,#00ff6640 50%,transparent 50.5%),
-    linear-gradient(0deg,transparent 49.5%,#00ff6640 50%,transparent 50.5%),
-    radial-gradient(circle,transparent 25%,#00ff6630 26%,transparent 27%,transparent 49%,#00ff6630 50%,transparent 51%);
-}
-.radar::after{
-    content:"";position:absolute;inset:0;
-    background:conic-gradient(from 0deg,transparent 0deg,#00ff6644 55deg,transparent 70deg);
-    border-radius:50%;animation:spin 3s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.radar-dot{
-    position:absolute;width:7px;height:7px;background:var(--red);
-    border-radius:50%;left:65%;top:30%;box-shadow:0 0 10px var(--red);z-index:2;
-}
-.clock{text-align:center;padding:18px;border:1px solid var(--green);border-radius:8px;background:#001407}
-.clock-time{font-size:clamp(26px,5vw,38px);font-weight:bold;text-shadow:0 0 12px var(--green)}
-.clock-date{margin-top:10px;font-size:14px}
-.small-label{color:#91cfa5;font-size:12px}
-#chatBox{height:300px;overflow-y:auto;border:1px solid var(--border);padding:12px;background:#000;border-radius:6px;margin-bottom:12px}
-.message{margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
-.user{color:#fff}.bot{color:var(--green)}.error{color:#ff6464}
-.chat-controls{display:flex;gap:8px;flex-wrap:wrap}
-input{background:#000;color:var(--green);border:1px solid var(--green);padding:12px;font-family:inherit;border-radius:5px;min-width:0}
-#messageInput{flex:1;width:200px}
-.voice-status{color:#b2d9bb;font-size:13px}
-.hidden{display:none!important}
-.calculator{max-width:340px;margin:auto}
-#calcDisplay{width:100%;font-size:27px;text-align:right;margin-bottom:10px}
-.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.calc-grid button{padding:17px 8px;font-size:18px;color:var(--green);background:#001509;border:1px solid var(--green);border-radius:5px}
-.calc-grid button:hover{background:#06451d}
-.calc-grid .equal{background:#07521e}
-.calc-grid .clear{color:#ff7777;border-color:var(--red)}
-.center{text-align:center}
-.profile{text-align:center;padding:25px}
-.profile .initial{
-    border:2px solid var(--green);width:85px;height:85px;border-radius:50%;
-    margin:auto auto 15px;display:grid;place-items:center;font-size:35px;
-    box-shadow:0 0 15px #00ff6655;
-}
-.copyright-box{
-    border:1px solid var(--border);padding:18px;margin:15px 0;
-    background:#001007;border-radius:7px;line-height:1.8;
-}
-.copyright-box h3{color:var(--green)}
-footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#8bc99d}
-
-/* WEATHER */
-.weather-header{
-    text-align:center;background:linear-gradient(135deg,#071c35,#123d65);
-    border:1px solid #4db8ff;color:white;
-}
-.weather-header h2{color:#4db8ff;font-size:clamp(22px,5vw,35px)}
-.weather-header p{color:#d5eaff;letter-spacing:2px}
-.weather-button{
-    background:#092b4d;color:white;border:1px solid #4db8ff;
-    padding:13px 18px;margin:5px;border-radius:7px;cursor:pointer;
-}
-.weather-button:hover{background:#4db8ff;color:#00101e}
-.weather-card{
-    text-align:center;background:linear-gradient(145deg,#071c35,#102e50);
-    border:1px solid #4db8ff;color:white;
-}
-.weather-icon{font-size:75px;margin:10px}
-.temperature{font-size:clamp(48px,10vw,75px);color:#ffcc66;font-weight:bold}
-.weather-card h2,.weather-card h3{color:#4db8ff}
-.weather-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:25px}
-.weather-stat{background:#102e50;border:1px solid #356b9a;border-radius:9px;padding:15px 8px}
-.weather-stat span{font-size:28px}
-.weather-stat p{font-size:11px;color:#a8d9ff}
-.weather-stat h3{font-size:19px;color:white}
-#locationStatus,#locationDetails{color:#c4e7ff;line-height:1.7}
-
-/* BHARAT EXPLORER */
-.bharat-header{
-    text-align:center;background:radial-gradient(circle at center,#16385a,#020817);
-    border:1px solid #d4a94d;color:white;padding:28px 12px;
-}
-.bharat-header h2{color:#ff9933;font-size:clamp(25px,5vw,38px);letter-spacing:3px}
-.bharat-header p{color:#eee;letter-spacing:2px}
-.chakra{font-size:55px;color:#ff9933}
-.bharat-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
-.bharat-button{
-    color:#fff;background:#172b42;border:1px solid #d4a94d;
-    padding:11px 16px;border-radius:6px;
-}
-.bharat-button:hover{background:#ff9933;color:#111}
-#bharatMap{
-    height:520px;width:100%;background:#071629;
-    border:1px solid #d4a94d;border-radius:10px;overflow:hidden;
-}
-.bharat-result{
-    padding:12px;margin:8px 0;border:1px solid #d4a94d;
-    border-radius:7px;background:#101e32;color:white;cursor:pointer;
-}
-.bharat-result:hover{background:#263b57}
-#districtInfo{color:white;line-height:1.8}
-#districtInfo h2{color:#ff9933}
-#districtInfo h3{color:#ffcc80}
-#districtSearch{width:100%;margin-bottom:12px}
-.bharat-note{color:#b7c6d8;font-size:12px;line-height:1.6}
-
-@media(max-width:500px){
-    main{padding:9px}.panel{padding:13px}
-    #bharatMap{height:400px}
-}
-</style>
-
-</head>
-
-<body>
-
-<header>
-    <h1>SHIVA AI</h1>
-    <p>ADVANCED PERSONAL AI SYSTEM</p>
-    <p style="color:#ff4444">BY NEELESH BHATT</p>
-</header>
-
-<nav>
-    <button onclick="showPage('home')">HOME</button>
-    <button onclick="showPage('chat')">AI CHAT</button>
-    <button onclick="showPage('calculator')">CALCULATOR</button>
-    <button onclick="showPage('weather')">🌦️ LIVE WEATHER</button>
-    <button onclick="showPage('profile')">CREATOR</button>
-    <button onclick="showPage('copyright')">COPYRIGHT</button>
-    <button onclick="showPage('bharat')">🇮🇳 BHARAT EXPLORER</button>
-</nav>
-
-<main>
-
-<section id="home" class="page">
-    <div class="panel">
-        <h2>◈ SYSTEM OVERVIEW</h2>
-        <div class="top-grid">
-            <div class="radar-wrap">
-                <div class="radar"><div class="radar-dot"></div></div>
-            </div>
-            <div class="clock">
-                <div class="small-label">INDIA STANDARD TIME</div>
-                <div id="clockTime" class="clock-time">--:--:--</div>
-                <div id="clockDate" class="clock-date">Loading date...</div>
-                <div class="small-label">ASIA / KOLKATA · UTC+5:30</div>
-            </div>
-        </div>
-    </div>
-    <div class="panel center">
-        <h2>WELCOME TO SHIVA AI</h2>
-        <p>Artificial Intelligence interface created by Neelesh Bhatt.</p>
-        <button class="action" onclick="showPage('chat')">START AI CHAT</button>
-        <br><br>
-        <button class="weather-button" onclick="showPage('weather')">🌦️ CHECK LIVE WEATHER</button>
-        <button class="bharat-button" onclick="showPage('bharat')">🇮🇳 EXPLORE BHARAT</button>
-    </div>
-</section>
-
-<section id="chat" class="page hidden">
-    <div class="panel">
-        <h2>◈ SHIVA AI CHAT</h2>
-        <div id="chatBox">
-            <div class="message bot">SHIVA AI ONLINE. Welcome! How can I help you?</div>
-        </div>
-        <div class="chat-controls">
-            <input id="messageInput" placeholder="Enter your message..." autocomplete="off">
-            <button class="action" id="sendBtn">SEND</button>
-        </div>
-        <br>
-        <div class="chat-controls">
-            <button class="action" id="voiceBtn">🎤 START VOICE</button>
-            <button class="action" id="stopVoiceBtn">STOP VOICE</button>
-            <button class="action" id="speakToggle">🔊 SPEECH ON</button>
-        </div>
-        <p id="voiceStatus" class="voice-status">Voice status: Ready</p>
-        <p class="small-label">Voice recognition availability depends on your browser and device.</p>
-    </div>
-</section>
-
-<section id="calculator" class="page hidden">
-    <div class="panel">
-        <h2>◈ SHIVA CALCULATOR</h2>
-        <div class="calculator">
-            <input id="calcDisplay" value="0" readonly>
-            <div class="calc-grid">
-                <button class="clear" onclick="calcClear()">AC</button>
-                <button onclick="calcBack()">⌫</button>
-                <button onclick="calcInput('%')">%</button>
-                <button onclick="calcInput('/')">÷</button>
-                <button onclick="calcInput('7')">7</button>
-                <button onclick="calcInput('8')">8</button>
-                <button onclick="calcInput('9')">9</button>
-                <button onclick="calcInput('*')">×</button>
-                <button onclick="calcInput('4')">4</button>
-                <button onclick="calcInput('5')">5</button>
-                <button onclick="calcInput('6')">6</button>
-                <button onclick="calcInput('-')">−</button>
-                <button onclick="calcInput('1')">1</button>
-                <button onclick="calcInput('2')">2</button>
-                <button onclick="calcInput('3')">3</button>
-                <button onclick="calcInput('+')">+</button>
-                <button onclick="calcInput('0')">0</button>
-                <button onclick="calcInput('00')">00</button>
-                <button onclick="calcInput('.')">.</button>
-                <button class="equal" onclick="calcEquals()">=</button>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- WEATHER PAGE -->
-
-<section id="weather" class="page hidden">
-
-```
-<div class="panel weather-header">
-    <h2>🌦️ SHIVA WEATHER STATION</h2>
-    <p>LIVE WEATHER AND LOCATION TRACKER</p>
-    <p>YOUR WORLD · YOUR WEATHER</p>
-</div>
-
-<div class="panel center">
-    <h2>📍 YOUR CURRENT LOCATION</h2>
-    <p id="locationStatus">Waiting for location permission...</p>
-
-    <button class="weather-button" id="locateBtn">
-        📍 DETECT MY LOCATION
-    </button>
-
-    <button class="weather-button" id="refreshWeatherBtn">
-        🔄 REFRESH WEATHER
-    </button>
-</div>
-
-<div class="panel weather-card">
-    <div class="weather-icon" id="weatherIcon">🌍</div>
-    <h2 id="weatherPlace">Your Location</h2>
-    <div class="temperature" id="temperature">--°C</div>
-    <h3 id="weatherDescription">Weather unavailable</h3>
-
-    <div class="weather-grid">
-        <div class="weather-stat">
-            <span>🌡️</span>
-            <p>FEELS LIKE</p>
-            <h3 id="feelsLike">--°C</h3>
-        </div>
-        <div class="weather-stat">
-            <span>💧</span>
-            <p>HUMIDITY</p>
-            <h3 id="humidity">--%</h3>
-        </div>
-        <div class="weather-stat">
-            <span>💨</span>
-            <p>WIND SPEED</p>
-            <h3 id="windSpeed">-- km/h</h3>
-        </div>
-        <div class="weather-stat">
-            <span>☁️</span>
-            <p>CLOUD COVER</p>
-            <h3 id="cloudCover">--%</h3>
-        </div>
-    </div>
-
-    <p id="coordinates" class="small-label">Coordinates: Not available</p>
-    <p id="weatherUpdated" class="small-label">Waiting for weather data...</p>
-</div>
-
-<div class="panel">
-    <h2>◈ LOCATION INFORMATION</h2>
-    <p id="locationDetails">Your location details will appear here.</p>
-    <p class="small-label">
-        Location detection requires your permission and an HTTPS connection.
-    </p>
-</div>
-```
-
-</section>
-
-<section id="profile" class="page hidden">
-    <div class="panel profile">
-        <h2>◈ CREATOR PROFILE</h2>
-        <div class="initial">N</div>
-        <h2 style="color:var(--green)">NEELESH BHATT</h2>
-        <p>Creator and developer of SHIVA AI.</p>
-        <p>Building technology with creativity and curiosity.</p>
-    </div>
-</section>
-
-<section id="copyright" class="page hidden">
-    <div class="panel">
-        <h2>◈ COPYRIGHT & LEGAL INFORMATION</h2>
-
-```
-    <div class="copyright-box">
-        <h3>Copyright Notice</h3>
-        <p><strong>SHIVA AI</strong></p>
-        <p>© 2026 Neelesh Bhatt. All rights reserved.</p>
-        <p>
-            The SHIVA AI website design, original interface elements,
-            branding, and original content are presented as the work
-            of Neelesh Bhatt.
-        </p>
-    </div>
-
-    <div class="copyright-box">
-        <h3>Permitted Use</h3>
-        <p>You may use this website for personal, educational,
-        and demonstration purposes.</p>
-        <p>Please do not copy, redistribute, or commercially reuse
-        original branding or content without permission from
-        the relevant rights holder.</p>
-    </div>
-
-    <div class="copyright-box">
-        <h3>Third-Party Services</h3>
-        <p>SHIVA AI may use third-party services and technologies
-        to provide AI responses and browser features. Those
-        services remain subject to their own terms and policies.</p>
-        <p>AI-generated responses may contain mistakes. Please
-        independently verify important information.</p>
-    </div>
-
-    <div class="copyright-box">
-        <h3>Contact</h3>
-        <p>For questions about the original SHIVA AI website content
-        or permissions, contact the website creator.</p>
-        <p><strong>Creator:</strong> Neelesh Bhatt</p>
-    </div>
-
-    <p class="center small-label">Last updated: 30 October 2026</p>
-</div>
-```
-
-</section>
-
-<!-- BHARAT EXPLORER -->
-
-<section id="bharat" class="page hidden">
-
-```
-<div class="panel bharat-header">
-    <div class="chakra">☸</div>
-    <h2>BHARAT EXPLORER</h2>
-    <p>DISCOVER THE LAND OF DIVERSITY</p>
-    <p>28 STATES · 8 UNION TERRITORIES</p>
-</div>
-
-<div class="panel">
-    <div class="bharat-toolbar">
-        <button class="bharat-button" onclick="bharatHome()">🇮🇳 INDIA</button>
-        <button class="bharat-button" onclick="bharatBack()">← BACK</button>
-    </div>
-
-    <h2 id="bharatTitle">EXPLORE INDIA</h2>
-    <p id="bharatDescription">Select a state or Union Territory on the map.</p>
-
-    <div id="bharatMap"></div>
-
-    <p id="bharatStatus" class="small-label">
-        Map data will load when you open Bharat Explorer.
-    </p>
-
-    <p class="bharat-note">
-        Map boundaries are supplied by external geographical datasets.
-    </p>
-</div>
-
-<div class="panel">
-    <h2>◈ FIND A STATE OR DISTRICT</h2>
-    <input id="districtSearch" placeholder="Search state or district...">
-    <div id="bharatResults"></div>
-</div>
-
-<div class="panel" id="districtInfo">
-    <h2>◈ DISTRICT DISCOVERY</h2>
-    <p>Select a district on the map to explore it.</p>
-</div>
-```
-
-</section>
-
-</main>
-
-<footer>
-    SHIVA AI © 2026 | CREATED BY NEELESH BHATT
-</footer>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-/* PAGE NAVIGATION */
-function showPage(page) {
-    document.querySelectorAll(".page").forEach(p =>
-        p.classList.add("hidden")
-    );
-    document.getElementById(page).classList.remove("hidden");
-
-    if (page === "bharat") {
-        setTimeout(startBharatExplorer,150);
-    }
-}
-
-/* INDIA CLOCK */
-function updateClock() {
-    const now = new Date();
-
-    document.getElementById("clockTime").textContent =
-        new Intl.DateTimeFormat("en-IN", {
-            timeZone:"Asia/Kolkata",
-            hour:"2-digit",minute:"2-digit",second:"2-digit",
-            hour12:true
-        }).format(now);
-
-    document.getElementById("clockDate").textContent =
-        new Intl.DateTimeFormat("en-IN", {
-            timeZone:"Asia/Kolkata",
-            weekday:"long",day:"2-digit",month:"long",year:"numeric"
-        }).format(now);
-}
-updateClock();
-setInterval(updateClock,1000);
-
-/* AI CHAT */
-const chatBox = document.getElementById("chatBox");
-const messageInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
-let speechEnabled = true;
-
-function addMessage(text,type) {
-    const div = document.createElement("div");
-    div.className = "message " + type;
-    div.textContent = text;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-async function sendMessage() {
-    const message = messageInput.value.trim();
-    if (!message) return;
-
-    messageInput.value = "";
-    addMessage("YOU: " + message,"user");
-    sendBtn.disabled = true;
-    sendBtn.textContent = "WAIT...";
-
-    try {
-        const response = await fetch("/api/chat",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({message})
-        });
-
-        const contentType = response.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-            throw new Error("Server did not return JSON. Check the Flask /api/chat route.");
-        }
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Server error " + response.status);
-
-        const reply = data.reply || data.response || "No response received.";
-        addMessage("SHIVA AI: " + reply,"bot");
-
-        if (speechEnabled && "speechSynthesis" in window) {
-            speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(reply);
-            utterance.lang = "en-IN";
-            speechSynthesis.speak(utterance);
-        }
-    } catch(error) {
-        addMessage("ERROR: " + error.message,"error");
-    } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "SEND";
-    }
-}
-
-sendBtn.addEventListener("click",sendMessage);
-messageInput.addEventListener("keydown",event => {
-    if (event.key === "Enter") sendMessage();
-});
-
-/* VOICE INPUT */
-const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-let recognition = null;
-let listening = false;
-
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = "en-IN";
-    recognition.continuous = true;
-    recognition.interimResults = false;
-
-    recognition.onresult = event => {
-        const result = event.results[event.results.length - 1];
-        if (result.isFinal) {
-            messageInput.value = result[0].transcript;
-            sendMessage();
-        }
-    };
-
-    recognition.onerror = event => {
-        document.getElementById("voiceStatus").textContent =
-            "Voice error: " + event.error;
-    };
-
-    recognition.onend = () => {
-        if (listening) {
-            try { recognition.start(); } catch(e) {}
-        }
-    };
-}
-
-document.getElementById("voiceBtn").addEventListener("click",() => {
-    if (!recognition) {
-        document.getElementById("voiceStatus").textContent =
-            "Speech recognition is not supported here. Try Chrome.";
-        return;
-    }
-    if (!listening) {
-        listening = true;
-        try { recognition.start(); } catch(e) {}
-        document.getElementById("voiceStatus").textContent = "Listening...";
-        document.getElementById("voiceBtn").textContent = "🎤 LISTENING";
-    }
-});
-
-document.getElementById("stopVoiceBtn").addEventListener("click",() => {
-    listening = false;
-    if (recognition) recognition.stop();
-    if ("speechSynthesis" in window) speechSynthesis.cancel();
-    document.getElementById("voiceStatus").textContent = "Voice stopped.";
-    document.getElementById("voiceBtn").textContent = "🎤 START VOICE";
-});
-
-document.getElementById("speakToggle").addEventListener("click",event => {
-    speechEnabled = !speechEnabled;
-    event.target.textContent = speechEnabled ? "🔊 SPEECH ON" : "🔇 SPEECH OFF";
-});
-
-/* CALCULATOR */
-const calcDisplay = document.getElementById("calcDisplay");
-let calcExpression = "";
-
-function calcInput(value) {
-    if (calcExpression.length > 45) return;
-    calcExpression += value;
-    calcDisplay.value = calcExpression;
-}
-function calcClear() {
-    calcExpression = "";
-    calcDisplay.value = "0";
-}
-function calcBack() {
-    calcExpression = calcExpression.slice(0,-1);
-    calcDisplay.value = calcExpression || "0";
-}
-function calcEquals() {
-    if (!calcExpression) return;
-
-    if (!/^[0-9+\-*/%.() ]+$/.test(calcExpression)) {
-        calcDisplay.value = "ERROR";
-        calcExpression = "";
-        return;
-    }
-
-    try {
-        const result = Function('"use strict"; return (' + calcExpression + ')')();
-        if (!Number.isFinite(result)) throw new Error("Invalid");
-        calcExpression = String(Number(result.toFixed(10)));
-        calcDisplay.value = calcExpression;
-    } catch(e) {
-        calcDisplay.value = "ERROR";
-        calcExpression = "";
-    }
-}
-
-/* WEATHER STATION */
-let currentLatitude = null;
-let currentLongitude = null;
-
-const weatherCodes = {
-    0:["☀️","Clear sky"],
-    1:["🌤️","Mainly clear"],
-    2:["⛅","Partly cloudy"],
-    3:["☁️","Overcast"],
-    45:["🌫️","Fog"],
-    48:["🌫️","Depositing rime fog"],
-    51:["🌦️","Light drizzle"],
-    53:["🌦️","Moderate drizzle"],
-    55:["🌧️","Dense drizzle"],
-    61:["🌧️","Slight rain"],
-    63:["🌧️","Moderate rain"],
-    65:["🌧️","Heavy rain"],
-    71:["🌨️","Slight snowfall"],
-    73:["❄️","Moderate snowfall"],
-    75:["❄️","Heavy snowfall"],
-    80:["🌦️","Rain showers"],
-    81:["🌧️","Moderate rain showers"],
-    82:["⛈️","Violent rain showers"],
-    95:["⛈️","Thunderstorm"],
-    96:["⛈️","Thunderstorm with hail"],
-    99:["⛈️","Heavy thunderstorm with hail"]
-};
-
-function detectLocation() {
-    const status = document.getElementById("locationStatus");
-
-    if (!navigator.geolocation) {
-        status.textContent = "Location is not supported by your browser.";
-        return;
-    }
-
-    status.textContent = "Detecting your location...";
-
-    navigator.geolocation.getCurrentPosition(
-        position => {
-            currentLatitude = position.coords.latitude;
-            currentLongitude = position.coords.longitude;
-
-            document.getElementById("coordinates").textContent =
-                "Latitude: " + currentLatitude.toFixed(4) +
-                " | Longitude: " + currentLongitude.toFixed(4);
-
-            document.getElementById("locationDetails").textContent =
-                "Your device location was detected successfully.";
-
-            status.textContent = "Location detected successfully!";
-            getLiveWeather();
-        },
-        error => {
-            const messages = {
-                1:"Location permission denied. Please allow location access.",
-                2:"Your current location could not be determined.",
-                3:"Location request timed out. Try again."
-            };
-            status.textContent = messages[error.code] || "Unable to detect location.";
-        },
-        {
-            enableHighAccuracy:true,
-            timeout:15000,
-            maximumAge:300000
-        }
-    );
-}
-
-async function getLiveWeather() {
-    if (currentLatitude === null || currentLongitude === null) {
-        detectLocation();
-        return;
-    }
-
-    document.getElementById("weatherDescription").textContent =
-        "Loading current weather...";
-
-    const url =
-        "https://api.open-meteo.com/v1/forecast" +
-        "?latitude=" + currentLatitude +
-        "&longitude=" + currentLongitude +
-        "&current=temperature_2m,relative_humidity_2m," +
-        "apparent_temperature,is_day,precipitation," +
-        "weather_code,cloud_cover,wind_speed_10m" +
-        "&timezone=auto";
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Weather service unavailable.");
-
-        const data = await response.json();
-        if (!data.current) throw new Error("Weather information not available.");
-
-        const weather = data.current;
-        const code = weatherCodes[weather.weather_code] ||
-            ["🌍","Weather condition unavailable"];
-
-        document.getElementById("weatherIcon").textContent = code[0];
-        document.getElementById("weatherDescription").textContent = code[1];
-        document.getElementById("temperature").textContent =
-            Math.round(weather.temperature_2m) + "°C";
-        document.getElementById("feelsLike").textContent =
-            Math.round(weather.apparent_temperature) + "°C";
-        document.getElementById("humidity").textContent =
-            weather.relative_humidity_2m + "%";
-        document.getElementById("windSpeed").textContent =
-            weather.wind_speed_10m + " km/h";
-        document.getElementById("cloudCover").textContent =
-            weather.cloud_cover + "%";
-
-        document.getElementById("weatherUpdated").textContent =
-            "Last updated: " + new Date().toLocaleTimeString("en-IN");
-
-        document.getElementById("weatherPlace").textContent =
-            "YOUR CURRENT WEATHER";
-
-        document.getElementById("locationStatus").textContent =
-            "Location and weather successfully updated.";
-
-    } catch(error) {
-        document.getElementById("weatherDescription").textContent =
-            "Unable to load weather.";
-        document.getElementById("locationStatus").textContent =
-            error.message;
-    }
-}
-
-document.getElementById("locateBtn")
-.addEventListener("click",detectLocation);
-
-document.getElementById("refreshWeatherBtn")
-.addEventListener("click",getLiveWeather);
-
-/* BHARAT EXPLORER */
 let bharatMap = null;
 let bharatLayer = null;
 let bharatLevel = "india";
-let bharatHistory = [];
 let selectedState = "";
 let searchFeatures = [];
 
 const INDIA_MAP_URL =
-"https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/india.geojson";
+"https://raw.githubusercontent.com/geohacker/india/master/state/india_state.geojson";
 
 const STATE_MAP_BASE =
 "https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/states/";
 
 const stateNames = [
 "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar",
-"Chhattisgarh","Goa","Gujarat","Haryana",
-"Himachal Pradesh","Jharkhand","Karnataka","Kerala",
-"Madhya Pradesh","Maharashtra","Manipur","Meghalaya",
-"Mizoram","Nagaland","Odisha","Punjab","Rajasthan",
-"Sikkim","Tamil Nadu","Telangana","Tripura",
-"Uttarakhand","Uttar Pradesh","West Bengal",
-"Andaman and Nicobar Islands","Chandigarh",
-"Dadra and Nagar Haveli and Daman and Diu",
-"Delhi","Jammu and Kashmir","Ladakh",
-"Lakshadweep","Puducherry"
+"Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh",
+"Jharkhand","Karnataka","Kerala","Madhya Pradesh",
+"Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland",
+"Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu",
+"Telangana","Tripura","Uttar Pradesh","Uttarakhand",
+"West Bengal","Andaman and Nicobar Islands","Chandigarh",
+"Dadra and Nagar Haveli and Daman and Diu","Delhi",
+"Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
 ];
 
-function mapName(name) {
-    const special = {
-        "Andaman and Nicobar Islands":"andaman-and-nicobar-islands",
-        "Dadra and Nagar Haveli and Daman and Diu":
-            "dadra-and-nagar-haveli-and-daman-and-diu"
-    };
-    return special[name] ||
-        name.toLowerCase().replace(/ & /g,"-").replace(/ /g,"-");
+const indiaFacts = {
+"Rajasthan":{
+places:"Jaipur, Udaipur, Jaisalmer Fort, Jodhpur and Ranthambore.",
+food:"Dal Baati Churma, Gatte ki Sabzi and Laal Maas.",
+culture:"Ghoomar dance, colourful textiles and traditional handicrafts.",
+festival:"Desert Festival, Gangaur and Teej."
+},
+"Uttarakhand":{
+places:"Kedarnath, Badrinath, Valley of Flowers, Nainital and Jim Corbett National Park.",
+food:"Kafuli, Aloo ke Gutke, Bhatt ki Churkani and Bal Mithai.",
+culture:"Kumaoni and Garhwali traditions, folk music and mountain festivals.",
+festival:"Harela, Nanda Devi Raj Jat and Phool Dei."
+},
+"Uttar Pradesh":{
+places:"Taj Mahal, Varanasi ghats, Fatehpur Sikri, Ayodhya and Sarnath.",
+food:"Awadhi kebabs, Lucknow biryani, peda and Banarasi chaat.",
+culture:"Kathak, Banarasi silk, classical music and historic architecture.",
+festival:"Kumbh Mela, Dev Deepawali and Holi."
+},
+"Maharashtra":{
+places:"Ajanta and Ellora Caves, Gateway of India, Elephanta Caves and Mahabaleshwar.",
+food:"Vada Pav, Misal Pav, Puran Poli and Modak.",
+culture:"Lavani, Warli art, Marathi theatre and forts.",
+festival:"Ganesh Chaturthi and Gudi Padwa."
+},
+"Goa":{
+places:"Old Goa churches, Panaji, beaches, Dudhsagar Falls and forts.",
+food:"Goan fish curry, Bebinca and traditional coconut-based dishes.",
+culture:"Indo-Portuguese heritage, music and coastal traditions.",
+festival:"Carnival and Shigmo."
+},
+"Kerala":{
+places:"Alleppey backwaters, Munnar, Fort Kochi, Wayanad and Periyar.",
+food:"Appam, Puttu, Kerala Sadya and banana chips.",
+culture:"Kathakali, Mohiniyattam, Ayurveda and traditional boat races.",
+festival:"Onam, Vishu and Thrissur Pooram."
+},
+"Karnataka":{
+places:"Hampi, Mysuru Palace, Badami, Coorg and Hoysala temples.",
+food:"Bisi Bele Bath, Mysore Pak, Dosa and Ragi Mudde.",
+culture:"Yakshagana, Carnatic music and Vijayanagara heritage.",
+festival:"Mysuru Dasara and Ugadi."
+},
+"Tamil Nadu":{
+places:"Mahabalipuram, Madurai Meenakshi Temple, Thanjavur and Ooty.",
+food:"Idli, Dosa, Pongal, Chettinad cuisine and filter coffee.",
+culture:"Bharatanatyam, Tamil literature and Dravidian temple architecture.",
+festival:"Pongal and Tamil New Year."
+},
+"Gujarat":{
+places:"Rann of Kutch, Somnath, Dwarka, Statue of Unity and Gir National Park.",
+food:"Dhokla, Thepla, Undhiyu and Khandvi.",
+culture:"Garba, Bandhani textiles and traditional crafts.",
+festival:"Navratri and Rann Utsav."
+},
+"West Bengal":{
+places:"Darjeeling, Sundarbans, Victoria Memorial and Kolkata.",
+food:"Rasgulla, Sandesh, Mishti Doi and Bengali fish curry.",
+culture:"Durga Puja, Baul music and Bengali literature.",
+festival:"Durga Puja and Poila Boishakh."
+},
+"Punjab":{
+places:"Golden Temple, Jallianwala Bagh, Anandpur Sahib and Wagah border ceremony.",
+food:"Sarson da Saag, Makki di Roti, Chole and Lassi.",
+culture:"Bhangra, Giddha, Punjabi music and farming traditions.",
+festival:"Baisakhi and Lohri."
+},
+"Himachal Pradesh":{
+places:"Shimla, Manali, Spiti Valley, Dharamshala and Great Himalayan National Park.",
+food:"Dham, Siddu and Chha Gosht.",
+culture:"Pahari traditions, handicrafts and mountain festivals.",
+festival:"Kullu Dussehra and Minjar Fair."
+},
+"Assam":{
+places:"Kaziranga National Park, Majuli, Kamakhya Temple and Sivasagar.",
+food:"Assamese thali, Khar, Masor Tenga and Pitha.",
+culture:"Bihu dance, handloom weaving and traditional music.",
+festival:"Bihu."
+},
+"Bihar":{
+places:"Bodh Gaya, Nalanda, Rajgir, Vaishali and Patna Sahib.",
+food:"Litti Chokha, Thekua and Khaja.",
+culture:"Ancient Buddhist and Jain heritage, Madhubani painting.",
+festival:"Chhath Puja and Sonepur Mela."
+},
+"Madhya Pradesh":{
+places:"Khajuraho, Sanchi, Bhimbetka, Gwalior Fort and Kanha National Park.",
+food:"Poha, Bhutte ka Kees, Dal Bafla and Mawa Bati.",
+culture:"Tribal art, classical heritage and historic architecture.",
+festival:"Khajuraho Dance Festival and Bhagoria."
+},
+"Andhra Pradesh":{
+places:"Tirupati, Araku Valley, Borra Caves and Amaravati.",
+food:"Pulihora, Gongura dishes and Andhra-style meals.",
+culture:"Kuchipudi dance, Kalamkari and temple traditions.",
+festival:"Ugadi and Sankranti."
+},
+"Telangana":{
+places:"Charminar, Golconda Fort, Ramappa Temple and Ramoji Film City.",
+food:"Hyderabadi Biryani, Haleem and Sarva Pindi.",
+culture:"Deccani heritage, Bathukamma and Perini dance.",
+festival:"Bathukamma and Bonalu."
+},
+"Odisha":{
+places:"Konark Sun Temple, Jagannath Temple, Chilika Lake and Puri.",
+food:"Dalma, Pakhala Bhata and Chhena Poda.",
+culture:"Odissi dance, Pattachitra art and temple architecture.",
+festival:"Rath Yatra and Raja Parba."
+},
+"Jharkhand":{
+places:"Betla National Park, Deoghar, Netarhat and Hundru Falls.",
+food:"Dhuska, Rugra and Thekua.",
+culture:"Tribal traditions, Sohrai painting and folk dances.",
+festival:"Sarhul and Karma."
+},
+"Chhattisgarh":{
+places:"Chitrakote Falls, Bastar, Sirpur and Kanger Valley National Park.",
+food:"Chila, Faraa and traditional tribal dishes.",
+culture:"Bastar art, tribal music and folk dances.",
+festival:"Bastar Dussehra."
+},
+"Sikkim":{
+places:"Gangtok, Tsomgo Lake, Yumthang Valley and monasteries.",
+food:"Momos, Thukpa and Gundruk.",
+culture:"Buddhist monasteries, Lepcha heritage and mountain traditions.",
+festival:"Losar and Pang Lhabsol."
+},
+"Arunachal Pradesh":{
+places:"Tawang Monastery, Ziro Valley, Sela Pass and Namdapha National Park.",
+food:"Thukpa, momos and local bamboo-shoot dishes.",
+culture:"Many indigenous communities, traditional weaving and festivals.",
+festival:"Losar, Nyokum and Dree."
+},
+"Meghalaya":{
+places:"Living Root Bridges, Cherrapunji, Dawki and Shillong.",
+food:"Jadoh, Dohneiiong and Tungrymbai.",
+culture:"Khasi, Garo and Jaintia traditions.",
+festival:"Wangala and Shad Suk Mynsiem."
+},
+"Manipur":{
+places:"Loktak Lake, Kangla Fort and Keibul Lamjao National Park.",
+food:"Eromba, Singju and Kangshoi.",
+culture:"Manipuri classical dance, handloom and martial traditions.",
+festival:"Yaoshang and Lai Haraoba."
+},
+"Mizoram":{
+places:"Aizawl, Reiek, Vantawng Falls and Phawngpui.",
+food:"Bai, Vawksa Rep and local rice dishes.",
+culture:"Mizo folk music, community traditions and weaving.",
+festival:"Chapchar Kut and Mim Kut."
+},
+"Nagaland":{
+places:"Kohima, Dzukou Valley, Khonoma and Mon.",
+food:"Smoked pork, bamboo-shoot dishes and traditional Naga food.",
+culture:"Naga tribal heritage, textiles and folk music.",
+festival:"Hornbill Festival."
+},
+"Tripura":{
+places:"Ujjayanta Palace, Neermahal, Unakoti and Tripura Sundari Temple.",
+food:"Mui Borok and traditional fish dishes.",
+culture:"Bamboo crafts, tribal traditions and dance.",
+festival:"Kharchi Puja and Garia Puja."
+},
+"Haryana":{
+places:"Kurukshetra, Sultanpur National Park and Pinjore Gardens.",
+food:"Bajra khichdi, kadhi and local dairy dishes.",
+culture:"Haryanvi folk music, wrestling and rural traditions.",
+festival:"Surajkund International Crafts Mela."
+},
+"Jammu and Kashmir":{
+places:"Srinagar, Dal Lake, Gulmarg, Pahalgam and Vaishno Devi.",
+food:"Rogan Josh, Dum Aloo and Kahwa.",
+culture:"Kashmiri crafts, Sufi music and traditional houseboats.",
+festival:"Tulip Festival and local harvest celebrations."
+},
+"Ladakh":{
+places:"Pangong Lake, Nubra Valley, Leh Palace and monasteries.",
+food:"Thukpa, Skyu and butter tea.",
+culture:"Buddhist monasteries, high-altitude traditions and local crafts.",
+festival:"Hemis Festival and Losar."
+},
+"Delhi":{
+places:"Red Fort, Qutub Minar, Humayun's Tomb, India Gate and Lotus Temple.",
+food:"Chole Bhature, Parathas, Kebabs and Chaat.",
+culture:"Historic monuments, markets, museums and diverse communities.",
+festival:"Diwali, Eid and Republic Day celebrations."
+},
+"Chandigarh":{
+places:"Rock Garden, Sukhna Lake and Capitol Complex.",
+food:"Punjabi cuisine and North Indian street food.",
+culture:"Modern architecture, gardens and Punjabi traditions.",
+festival:"Rose Festival."
+},
+"Andaman and Nicobar Islands":{
+places:"Havelock Island, Cellular Jail, Radhanagar Beach and Baratang.",
+food:"Seafood and coconut-based island dishes.",
+culture:"Island communities, maritime heritage and nature.",
+festival:"Island Tourism Festival."
+},
+"Lakshadweep":{
+places:"Agatti, Bangaram, Kavaratti and coral lagoons.",
+food:"Tuna dishes, coconut-based curries and local seafood.",
+culture:"Island traditions, boat culture and coastal heritage.",
+festival:"Eid celebrations and local island festivals."
+},
+"Puducherry":{
+places:"Promenade Beach, Auroville, French Quarter and Paradise Beach.",
+food:"French-inspired dishes, seafood and South Indian cuisine.",
+culture:"French colonial heritage, Tamil traditions and art.",
+festival:"Bastille Day and Pongal."
+},
+"Dadra and Nagar Haveli and Daman and Diu":{
+places:"Diu Fort, Naida Caves, Jampore Beach and Silvassa.",
+food:"Seafood, Gujarati dishes and coastal cuisine.",
+culture:"Portuguese heritage, tribal traditions and coastal life.",
+festival:"Nariyal Poornima and local cultural festivals."
+}
+};
+
+function escapeHTML(value) {
+return String(value).replace(/[&<>"']/g, char => ({
+"&":"&","<":"<",">":">",
+'"':""","'":"'"
+})[char]);
 }
 
 function startBharatExplorer() {
-    if (!window.L) {
-        document.getElementById("bharatStatus").textContent =
-            "Map library could not load. Check your internet connection.";
-        return;
-    }
+if (!window.L) {
+document.getElementById("bharatStatus").textContent =
+"Map library could not load. Check your internet connection.";
+return;
+}
 
-    if (bharatMap) {
-        bharatMap.invalidateSize();
-        return;
-    }
+```
+if (bharatMap) {
+    bharatMap.invalidateSize();
+    return;
+}
 
-    bharatMap = L.map("bharatMap").setView([22.5,82.5],4);
+bharatMap = L.map("bharatMap", {
+    minZoom:4,
+    maxZoom:12,
+    maxBounds:[[5,65],[40,101]],
+    maxBoundsViscosity:0.9
+}).setView([22.5,82.5],4);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-        attribution:"© OpenStreetMap contributors",
-        maxZoom:18
-    }).addTo(bharatMap);
+// No world map tiles: only Indian geographical boundaries.
+loadIndiaMap();
+```
 
-    loadIndiaMap();
 }
 
 function bharatStyle() {
-    return {
-        color:"#f2c66d",
-        weight:1.3,
-        fillColor:"#176b50",
-        fillOpacity:0.55
-    };
-}
-
-function bharatHome() {
-    bharatHistory = [];
-    bharatLevel = "india";
-    selectedState = "";
-    loadIndiaMap();
-}
-
-function bharatBack() {
-    if (!bharatHistory.length) {
-        bharatHome();
-        return;
-    }
-
-    const previous = bharatHistory.pop();
-
-    if (previous.level === "india") {
-        selectedState = "";
-        loadIndiaMap();
-    } else {
-        selectedState = previous.state;
-        loadStateMap(previous.state,true);
-    }
+return {
+color:"#f2c66d",
+weight:1.5,
+fillColor:"#176b50",
+fillOpacity:0.65
+};
 }
 
 function loadIndiaMap() {
-    bharatLevel = "india";
-    document.getElementById("bharatTitle").textContent = "🇮🇳 EXPLORE INDIA";
-    document.getElementById("bharatDescription").textContent =
-        "Select a state or Union Territory.";
+bharatLevel = "india";
+selectedState = "";
 
-    document.getElementById("districtInfo").innerHTML =
-        "<h2>◈ DISTRICT DISCOVERY</h2><p>Select a district on the map.</p>";
+```
+document.getElementById("bharatTitle").textContent =
+    "🇮🇳 EXPLORE INDIA";
 
-    loadGeoJSON(INDIA_MAP_URL,"india");
+document.getElementById("bharatDescription").textContent =
+    "Explore India's states and Union Territories. Select a region to discover it.";
+
+loadGeoJSON(INDIA_MAP_URL,"india");
+```
+
 }
 
-function loadStateMap(state,fromBack=false) {
-    if (!fromBack) bharatHistory.push({level:"india",state:""});
+function loadStateMap(state) {
+selectedState = state;
+bharatLevel = "state";
 
-    selectedState = state;
-    bharatLevel = "state";
+```
+document.getElementById("bharatTitle").textContent =
+    state.toUpperCase();
 
-    document.getElementById("bharatTitle").textContent = state.toUpperCase();
-    document.getElementById("bharatDescription").textContent =
-        "Select a district to explore it.";
+document.getElementById("bharatDescription").textContent =
+    "Explore districts and discover famous attractions in " + state + ".";
 
-    const url = STATE_MAP_BASE + mapName(state) + ".geojson";
-    loadGeoJSON(url,"state");
+const slug = state.toLowerCase().replace(/ & /g,"-").replace(/ /g,"-");
+const url = STATE_MAP_BASE + slug + ".geojson";
+
+loadGeoJSON(url,"state");
+```
+
+}
+
+function bharatHome() {
+loadIndiaMap();
+}
+
+function bharatBack() {
+if (bharatLevel === "state") {
+loadIndiaMap();
+} else {
+bharatHome();
+}
 }
 
 async function loadGeoJSON(url,level) {
-    const status = document.getElementById("bharatStatus");
-    status.textContent = "Loading geographical data...";
+const status = document.getElementById("bharatStatus");
+status.textContent = "Loading Indian map data...";
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("Map data unavailable.");
+```
+try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Map data unavailable.");
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (bharatLayer) bharatMap.removeLayer(bharatLayer);
+    if (bharatLayer) bharatMap.removeLayer(bharatLayer);
 
-        searchFeatures = [];
+    searchFeatures = [];
 
-        bharatLayer = L.geoJSON(data,{
-            style:bharatStyle,
+    bharatLayer = L.geoJSON(data,{
+        style:bharatStyle,
 
-            onEachFeature:function(feature,layer) {
-                const props = feature.properties || {};
+        onEachFeature:function(feature,layer) {
+            const props = feature.properties || {};
 
-                const name =
-                    props.name || props.NAME || props.ST_NM ||
-                    props.district || props.DISTRICT ||
-                    props.state || props.STATE ||
-                    props.dtname || props.DTNAME || "Unknown region";
+            const name =
+                props.name || props.NAME || props.ST_NM ||
+                props.district || props.DISTRICT ||
+                props.state || props.STATE ||
+                props.dtname || props.DTNAME ||
+                props.NAME_1 || "Unknown region";
 
-                searchFeatures.push({name,feature,level});
-                layer.bindTooltip(escapeHTML(name));
+            searchFeatures.push({name,level});
 
-                layer.on("click",function() {
-                    if (level === "india") {
-                        const match = stateNames.find(item =>
-                            item.toLowerCase() === name.toLowerCase()
-                        );
-                        if (match) loadStateMap(match);
-                        else showDistrictInfo(name);
+            layer.bindTooltip(escapeHTML(name));
+
+            layer.on("click",function() {
+                if (level === "india") {
+                    const match = stateNames.find(state =>
+                        state.toLowerCase() === name.toLowerCase()
+                    );
+
+                    if (match) {
+                        loadStateMap(match);
                     } else {
-                        showDistrictInfo(name);
+                        showRegionInfo(name);
                     }
-                });
+                } else {
+                    showRegionInfo(name);
+                }
+            });
 
-                layer.on("mouseover",function() {
-                    layer.setStyle({
-                        fillColor:"#ff9933",
-                        fillOpacity:0.85,
-                        weight:2
-                    });
+            layer.on("mouseover",function() {
+                layer.setStyle({
+                    fillColor:"#ff9933",
+                    fillOpacity:0.9,
+                    weight:2
                 });
+            });
 
-                layer.on("mouseout",function() {
-                    bharatLayer.resetStyle(layer);
-                });
-            }
-        }).addTo(bharatMap);
-
-        if (bharatLayer.getBounds().isValid()) {
-            bharatMap.fitBounds(bharatLayer.getBounds(),{padding:[15,15]});
+            layer.on("mouseout",function() {
+                bharatLayer.resetStyle(layer);
+            });
         }
+    }).addTo(bharatMap);
 
-        status.textContent = level === "india"
-            ? "India map loaded. Select a region."
-            : "State map loaded. Select a district.";
-
-        renderSearchResults("");
-
-    } catch(error) {
-        status.textContent = "Could not load map: " + error.message;
-        console.error("Bharat Explorer:",error);
+    if (bharatLayer.getBounds().isValid()) {
+        bharatMap.fitBounds(bharatLayer.getBounds(),{
+            padding:[15,15]
+        });
     }
+
+    status.textContent = level === "india"
+        ? "India map loaded. Select a state or Union Territory."
+        : "Regional map loaded. Select a district if district boundaries are available.";
+
+    renderSearchResults("");
+
+} catch(error) {
+    status.textContent =
+        "Could not load this map. The external GeoJSON source or filename may have changed.";
+    console.error(error);
+}
+```
+
 }
 
-function escapeHTML(value) {
-    return String(value).replace(/[&<>"']/g,char => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",
-        '"':"&quot;","'":"&#39;"
-    })[char]);
-}
+function showRegionInfo(name) {
+const facts = indiaFacts[selectedState] || indiaFacts[name];
 
-function showDistrictInfo(district) {
-    document.getElementById("districtInfo").innerHTML = `
-        <h2>🇮🇳 ${escapeHTML(district)}</h2>
-        <p><strong>State / UT:</strong> ${escapeHTML(selectedState || "India")}</p>
-        <h3>Famous places</h3>
-        <p>Verified tourist attractions for this district will be added here.</p>
-        <h3>Local food</h3>
-        <p>Verified local dishes and traditional cuisine will be added here.</p>
-        <h3>Culture and festivals</h3>
-        <p>Local traditions, celebrations and heritage will be added here.</p>
-        <h3>Famous crafts and products</h3>
-        <p>Verified local crafts and products will be added here.</p>
-        <p class="bharat-note">District facts are not yet available in this version.</p>
+```
+let html = `
+    <h2>🇮🇳 ${escapeHTML(name)}</h2>
+    <p><strong>Region:</strong> ${escapeHTML(selectedState || "India")}</p>
+`;
+
+if (facts) {
+    html += `
+        <h3>🏞️ Famous places</h3>
+        <p>${escapeHTML(facts.places)}</p>
+
+        <h3>🍲 Famous food</h3>
+        <p>${escapeHTML(facts.food)}</p>
+
+        <h3>🎭 Culture and traditions</h3>
+        <p>${escapeHTML(facts.culture)}</p>
+
+        <h3>🎉 Festivals</h3>
+        <p>${escapeHTML(facts.festival)}</p>
+    `;
+} else {
+    html += `
+        <p>Choose a state to explore its famous places, food,
+        culture and festivals.</p>
     `;
 }
 
+html += `
+    <p class="bharat-note">
+    These are selected highlights, not a complete list.
+    Check local tourism sources before planning a visit.
+    </p>
+`;
+
+document.getElementById("districtInfo").innerHTML = html;
+```
+
+}
+
 function renderSearchResults(query) {
-    const container = document.getElementById("bharatResults");
-    const q = query.toLowerCase().trim();
+const container = document.getElementById("bharatResults");
+const q = query.toLowerCase().trim();
 
-    const results = searchFeatures.filter(item =>
-        item.name.toLowerCase().includes(q)
-    ).slice(0,40);
+```
+const results = searchFeatures.filter(item =>
+    item.name.toLowerCase().includes(q)
+).slice(0,40);
 
-    container.innerHTML = "";
+container.innerHTML = "";
 
-    results.forEach(item => {
-        const button = document.createElement("button");
-        button.className = "bharat-result";
-        button.style.width = "100%";
-        button.style.textAlign = "left";
-        button.textContent = "📍 " + item.name;
+results.forEach(item => {
+    const button = document.createElement("button");
+    button.className = "bharat-result";
+    button.style.width = "100%";
+    button.style.textAlign = "left";
+    button.textContent = "📍 " + item.name;
 
-        button.addEventListener("click",() => {
-            if (item.level === "india") {
-                const match = stateNames.find(state =>
-                    state.toLowerCase() === item.name.toLowerCase()
-                );
-                if (match) loadStateMap(match);
-                else showDistrictInfo(item.name);
-            } else {
-                showDistrictInfo(item.name);
-            }
-        });
-
-        container.appendChild(button);
+    button.addEventListener("click",() => {
+        if (item.level === "india") {
+            const match = stateNames.find(state =>
+                state.toLowerCase() === item.name.toLowerCase()
+            );
+            if (match) loadStateMap(match);
+        } else {
+            showRegionInfo(item.name);
+        }
     });
 
-    if (!results.length) {
-        container.textContent = q
-            ? "No matching regions in the loaded map."
-            : "Map results will appear here.";
-    }
+    container.appendChild(button);
+});
+
+if (!results.length) {
+    container.textContent = q
+        ? "No matching regions in the current map."
+        : "Map results will appear here.";
+}
+```
+
 }
 
 document.getElementById("districtSearch")
 .addEventListener("input",function() {
-    renderSearchResults(this.value);
+renderSearchResults(this.value);
 });
-
-</script>
-
-</body>
-</html>
