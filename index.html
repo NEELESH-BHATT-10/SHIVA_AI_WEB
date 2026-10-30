@@ -7,244 +7,97 @@
 <title>SHIVA AI | By Neelesh Bhatt</title>
 <style>
 :root {
-    --green: #00ff66;
-    --red: #ff2020;
-    --bg: #020704;
-    --panel: rgba(0, 20, 8, .94);
-    --border: rgba(0,255,102,.35);
+    --green:#00ff66;
+    --red:#ff2020;
+    --bg:#020704;
+    --panel:rgba(0,20,8,.94);
+    --border:rgba(0,255,102,.35);
 }
-* { box-sizing: border-box; }
-body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--green);
-    font-family: Consolas, monospace;
-    min-height: 100vh;
+*{box-sizing:border-box}
+body{
+    margin:0;background:var(--bg);color:var(--green);
+    font-family:Consolas,monospace;min-height:100vh;
 }
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: .12;
-    background: repeating-linear-gradient(
-        transparent 0px,
-        transparent 3px,
-        rgba(0,255,80,.18) 4px
-    );
-    z-index: 5;
+body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;
+    opacity:.12;z-index:5;
+    background:repeating-linear-gradient(transparent 0,transparent 3px,rgba(0,255,80,.18) 4px);
 }
-header {
-    text-align: center;
-    padding: 22px 12px;
-    border-bottom: 1px solid var(--border);
+header{text-align:center;padding:22px 12px;border-bottom:1px solid var(--border)}
+header h1{color:var(--red);letter-spacing:5px;margin:0;font-size:clamp(25px,5vw,42px);text-shadow:0 0 14px var(--red)}
+header p{margin-bottom:0}
+nav{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:14px}
+button{cursor:pointer;font-family:inherit}
+nav button,.action{
+    color:var(--green);background:#03140a;border:1px solid var(--green);
+    padding:10px 15px;border-radius:5px;
 }
-header h1 {
-    color: var(--red);
-    letter-spacing: 5px;
-    margin: 0;
-    font-size: clamp(25px, 5vw, 42px);
-    text-shadow: 0 0 14px var(--red);
+nav button:hover,.action:hover{background:var(--green);color:black}
+main{max-width:1050px;margin:auto;padding:15px}
+.panel{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:18px;margin-bottom:18px;
+    box-shadow:0 0 15px rgba(0,255,102,.07);
 }
-header p { color: var(--green); margin-bottom: 0; }
-nav {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 14px;
-}
-button {
-    cursor: pointer;
-    font-family: inherit;
-}
-nav button, .action {
-    color: var(--green);
-    background: #03140a;
-    border: 1px solid var(--green);
-    padding: 10px 15px;
-    border-radius: 5px;
-}
-nav button:hover, .action:hover {
-    background: var(--green);
-    color: black;
-}
-main {
-    max-width: 1050px;
-    margin: auto;
-    padding: 15px;
-}
-.panel {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px;
-    margin-bottom: 18px;
-    box-shadow: 0 0 15px rgba(0,255,102,.07);
-}
-h2 {
-    color: var(--red);
-    margin-top: 0;
-}
-.top-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 18px;
-    align-items: center;
-}
-.radar-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.radar {
-    width: 190px;
-    height: 190px;
-    border: 2px solid var(--green);
-    border-radius: 50%;
-    position: relative;
-    overflow: hidden;
+h2{color:var(--red);margin-top:0}
+.top-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;align-items:center}
+.radar-wrap{display:flex;align-items:center;justify-content:center}
+.radar{
+    width:190px;height:190px;border:2px solid var(--green);
+    border-radius:50%;position:relative;overflow:hidden;
     background:
-        linear-gradient(90deg, transparent 49.5%, #00ff6640 50%, transparent 50.5%),
-        linear-gradient(0deg, transparent 49.5%, #00ff6640 50%, transparent 50.5%),
-        radial-gradient(circle, transparent 25%, #00ff6630 26%, transparent 27%, transparent 49%, #00ff6630 50%, transparent 51%);
+    linear-gradient(90deg,transparent 49.5%,#00ff6640 50%,transparent 50.5%),
+    linear-gradient(0deg,transparent 49.5%,#00ff6640 50%,transparent 50.5%),
+    radial-gradient(circle,transparent 25%,#00ff6630 26%,transparent 27%,transparent 49%,#00ff6630 50%,transparent 51%);
 }
-.radar::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: conic-gradient(from 0deg, transparent 0deg, #00ff6644 55deg, transparent 70deg);
-    border-radius: 50%;
-    animation: spin 3s linear infinite;
+.radar::after{
+    content:"";position:absolute;inset:0;
+    background:conic-gradient(from 0deg,transparent 0deg,#00ff6644 55deg,transparent 70deg);
+    border-radius:50%;animation:spin 3s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.radar-dot {
-    position: absolute;
-    width: 7px;
-    height: 7px;
-    background: var(--red);
-    border-radius: 50%;
-    left: 65%;
-    top: 30%;
-    box-shadow: 0 0 10px var(--red);
-    z-index: 2;
+@keyframes spin{to{transform:rotate(360deg)}}
+.radar-dot{
+    position:absolute;width:7px;height:7px;background:var(--red);
+    border-radius:50%;left:65%;top:30%;box-shadow:0 0 10px var(--red);z-index:2;
 }
-.clock {
-    text-align: center;
-    padding: 18px;
-    border: 1px solid var(--green);
-    border-radius: 8px;
-    background: #001407;
+.clock{text-align:center;padding:18px;border:1px solid var(--green);border-radius:8px;background:#001407}
+.clock-time{font-size:clamp(26px,5vw,38px);font-weight:bold;text-shadow:0 0 12px var(--green)}
+.clock-date{margin-top:10px;font-size:14px}
+.small-label{color:#91cfa5;font-size:12px}
+#chatBox{height:300px;overflow-y:auto;border:1px solid var(--border);padding:12px;background:#000;border-radius:6px;margin-bottom:12px}
+.message{margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
+.user{color:#fff}.bot{color:var(--green)}.error{color:#ff6464}
+.chat-controls{display:flex;gap:8px;flex-wrap:wrap}
+input{background:#000;color:var(--green);border:1px solid var(--green);padding:12px;font-family:inherit;border-radius:5px;min-width:0}
+#messageInput{flex:1;width:200px}
+.voice-status{color:#b2d9bb;font-size:13px}
+.hidden{display:none!important}
+.calculator{max-width:340px;margin:auto}
+#calcDisplay{width:100%;font-size:27px;text-align:right;margin-bottom:10px}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.calc-grid button{padding:17px 8px;font-size:18px;color:var(--green);background:#001509;border:1px solid var(--green);border-radius:5px}
+.calc-grid button:hover{background:#06451d}
+.calc-grid .equal{background:#07521e}
+.calc-grid .clear{color:#ff7777;border-color:var(--red)}
+.ttt-board{display:grid;grid-template-columns:repeat(3,90px);gap:8px;justify-content:center}
+.ttt-board button{height:90px;font-size:35px;color:var(--green);background:#001509;border:1px solid var(--green)}
+.center{text-align:center}
+.profile{text-align:center;padding:25px}
+.profile .initial{
+    border:2px solid var(--green);width:85px;height:85px;border-radius:50%;
+    margin:auto auto 15px;display:grid;place-items:center;font-size:35px;
+    box-shadow:0 0 15px #00ff6655;
 }
-.clock-time {
-    font-size: clamp(26px, 5vw, 38px);
-    font-weight: bold;
-    color: var(--green);
-    text-shadow: 0 0 12px var(--green);
+.copyright-box{
+    border:1px solid var(--border);padding:18px;margin:15px 0;
+    background:#001007;border-radius:7px;line-height:1.8;
 }
-.clock-date { margin-top: 10px; font-size: 14px; }
-.small-label { color: #91cfa5; font-size: 12px; }
-#chatBox {
-    height: 300px;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    padding: 12px;
-    background: #000;
-    border-radius: 6px;
-    margin-bottom: 12px;
-}
-.message {
-    margin: 10px 0;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    line-height: 1.5;
-}
-.user { color: #fff; }
-.bot { color: var(--green); }
-.error { color: #ff6464; }
-.chat-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-input, textarea {
-    background: #000;
-    color: var(--green);
-    border: 1px solid var(--green);
-    padding: 12px;
-    font-family: inherit;
-    border-radius: 5px;
-    min-width: 0;
-}
-#messageInput { flex: 1; width: 200px; }
-.voice-status { color: #b2d9bb; font-size: 13px; }
-.hidden { display: none !important; }
-.calculator {
-    max-width: 340px;
-    margin: auto;
-}
-#calcDisplay {
-    width: 100%;
-    font-size: 27px;
-    text-align: right;
-    margin-bottom: 10px;
-}
-.calc-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-}
-.calc-grid button {
-    padding: 17px 8px;
-    font-size: 18px;
-    color: var(--green);
-    background: #001509;
-    border: 1px solid var(--green);
-    border-radius: 5px;
-}
-.calc-grid button:hover { background: #06451d; }
-.calc-grid .equal { background: #07521e; }
-.calc-grid .clear { color: #ff7777; border-color: var(--red); }
-.ttt-board {
-    display: grid;
-    grid-template-columns: repeat(3, 90px);
-    gap: 8px;
-    justify-content: center;
-}
-.ttt-board button {
-    height: 90px;
-    font-size: 35px;
-    color: var(--green);
-    background: #001509;
-    border: 1px solid var(--green);
-}
-.center { text-align: center; }
-.profile {
-    text-align: center;
-    padding: 25px;
-}
-.profile .initial {
-    border: 2px solid var(--green);
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    margin: auto auto 15px;
-    display: grid;
-    place-items: center;
-    font-size: 35px;
-    box-shadow: 0 0 15px #00ff6655;
-}
-footer {
-    text-align: center;
-    padding: 20px;
-    border-top: 1px solid var(--border);
-    color: #8bc99d;
-}
-@media(max-width:500px) {
-    main { padding: 9px; }
-    .panel { padding: 13px; }
-    .ttt-board { grid-template-columns: repeat(3, 75px); }
-    .ttt-board button { height: 75px; }
+.copyright-box h3{color:var(--green)}
+footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#8bc99d}
+@media(max-width:500px){
+    main{padding:9px}.panel{padding:13px}
+    .ttt-board{grid-template-columns:repeat(3,75px)}
+    .ttt-board button{height:75px}
 }
 </style>
 </head>
@@ -262,6 +115,7 @@ footer {
     <button onclick="showPage('calculator')">CALCULATOR</button>
     <button onclick="showPage('game')">TIC TAC TOE</button>
     <button onclick="showPage('profile')">CREATOR</button>
+    <button onclick="showPage('copyright')">COPYRIGHT</button>
 </nav>
 
 <main>
@@ -270,9 +124,7 @@ footer {
         <h2>◈ SYSTEM OVERVIEW</h2>
         <div class="top-grid">
             <div class="radar-wrap">
-                <div class="radar">
-                    <div class="radar-dot"></div>
-                </div>
+                <div class="radar"><div class="radar-dot"></div></div>
             </div>
             <div class="clock">
                 <div class="small-label">INDIA STANDARD TIME</div>
@@ -282,15 +134,11 @@ footer {
             </div>
         </div>
     </div>
-
-```
-<div class="panel center">
-    <h2>WELCOME TO SHIVA AI</h2>
-    <p>Artificial Intelligence interface created by Neelesh Bhatt.</p>
-    <button class="action" onclick="showPage('chat')">START AI CHAT</button>
-</div>
-```
-
+    <div class="panel center">
+        <h2>WELCOME TO SHIVA AI</h2>
+        <p>Artificial Intelligence interface created by Neelesh Bhatt.</p>
+        <button class="action" onclick="showPage('chat')">START AI CHAT</button>
+    </div>
 </section>
 
 <section id="chat" class="page hidden">
@@ -324,32 +172,25 @@ footer {
                 <button onclick="calcBack()">⌫</button>
                 <button onclick="calcInput('%')">%</button>
                 <button onclick="calcInput('/')">÷</button>
-
-```
-            <button onclick="calcInput('7')">7</button>
-            <button onclick="calcInput('8')">8</button>
-            <button onclick="calcInput('9')">9</button>
-            <button onclick="calcInput('*')">×</button>
-
-            <button onclick="calcInput('4')">4</button>
-            <button onclick="calcInput('5')">5</button>
-            <button onclick="calcInput('6')">6</button>
-            <button onclick="calcInput('-')">−</button>
-
-            <button onclick="calcInput('1')">1</button>
-            <button onclick="calcInput('2')">2</button>
-            <button onclick="calcInput('3')">3</button>
-            <button onclick="calcInput('+')">+</button>
-
-            <button onclick="calcInput('0')">0</button>
-            <button onclick="calcInput('00')">00</button>
-            <button onclick="calcInput('.')">.</button>
-            <button class="equal" onclick="calcEquals()">=</button>
+                <button onclick="calcInput('7')">7</button>
+                <button onclick="calcInput('8')">8</button>
+                <button onclick="calcInput('9')">9</button>
+                <button onclick="calcInput('*')">×</button>
+                <button onclick="calcInput('4')">4</button>
+                <button onclick="calcInput('5')">5</button>
+                <button onclick="calcInput('6')">6</button>
+                <button onclick="calcInput('-')">−</button>
+                <button onclick="calcInput('1')">1</button>
+                <button onclick="calcInput('2')">2</button>
+                <button onclick="calcInput('3')">3</button>
+                <button onclick="calcInput('+')">+</button>
+                <button onclick="calcInput('0')">0</button>
+                <button onclick="calcInput('00')">00</button>
+                <button onclick="calcInput('.')">.</button>
+                <button class="equal" onclick="calcEquals()">=</button>
+            </div>
         </div>
     </div>
-</div>
-```
-
 </section>
 
 <section id="game" class="page hidden">
@@ -371,6 +212,65 @@ footer {
         <p>Building technology with creativity and curiosity.</p>
     </div>
 </section>
+
+<section id="copyright" class="page hidden">
+    <div class="panel">
+        <h2>◈ COPYRIGHT & LEGAL INFORMATION</h2>
+
+```
+    <div class="copyright-box">
+        <h3>Copyright Notice</h3>
+        <p><strong>SHIVA AI</strong></p>
+        <p>© 2026 Neelesh Bhatt. All rights reserved.</p>
+        <p>
+            The SHIVA AI website design, original interface elements,
+            branding, and original content are presented as the work
+            of Neelesh Bhatt.
+        </p>
+    </div>
+
+    <div class="copyright-box">
+        <h3>Permitted Use</h3>
+        <p>
+            You may use this website for personal, educational,
+            and demonstration purposes.
+        </p>
+        <p>
+            Please do not copy, redistribute, or commercially reuse
+            original branding or content without permission from
+            the relevant rights holder.
+        </p>
+    </div>
+
+    <div class="copyright-box">
+        <h3>Third-Party Services</h3>
+        <p>
+            SHIVA AI may use third-party services and technologies
+            to provide AI responses and browser features. Those
+            services remain subject to their own terms and policies.
+        </p>
+        <p>
+            AI-generated responses may contain mistakes. Please
+            independently verify important information.
+        </p>
+    </div>
+
+    <div class="copyright-box">
+        <h3>Contact</h3>
+        <p>
+            For questions about the original SHIVA AI website content
+            or permissions, contact the website creator.
+        </p>
+        <p><strong>Creator:</strong> Neelesh Bhatt</p>
+    </div>
+
+    <p class="center small-label">
+        Last updated: 30 October 2026
+    </p>
+</div>
+```
+
+</section>
 </main>
 
 <footer>
@@ -389,24 +289,18 @@ function updateClock() {
     const now = new Date();
     document.getElementById("clockTime").textContent =
         new Intl.DateTimeFormat("en-IN", {
-            timeZone: "Asia/Kolkata",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: true
+            timeZone:"Asia/Kolkata",
+            hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true
         }).format(now);
 
     document.getElementById("clockDate").textContent =
         new Intl.DateTimeFormat("en-IN", {
-            timeZone: "Asia/Kolkata",
-            weekday: "long",
-            day: "2-digit",
-            month: "long",
-            year: "numeric"
+            timeZone:"Asia/Kolkata",
+            weekday:"long",day:"2-digit",month:"long",year:"numeric"
         }).format(now);
 }
 updateClock();
-setInterval(updateClock, 1000);
+setInterval(updateClock,1000);
 
 /* AI CHAT */
 const chatBox = document.getElementById("chatBox");
@@ -414,7 +308,7 @@ const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 let speechEnabled = true;
 
-function addMessage(text, type) {
+function addMessage(text,type) {
     const div = document.createElement("div");
     div.className = "message " + type;
     div.textContent = text;
@@ -427,15 +321,15 @@ async function sendMessage() {
     if (!message) return;
 
     messageInput.value = "";
-    addMessage("YOU: " + message, "user");
+    addMessage("YOU: " + message,"user");
     sendBtn.disabled = true;
     sendBtn.textContent = "WAIT...";
 
     try {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({message})
+        const response = await fetch("/api/chat",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({message})
         });
 
         const contentType = response.headers.get("content-type") || "";
@@ -444,12 +338,10 @@ async function sendMessage() {
         }
 
         const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || "Server error " + response.status);
-        }
+        if (!response.ok) throw new Error(data.error || "Server error " + response.status);
 
         const reply = data.reply || data.response || "No response received.";
-        addMessage("SHIVA AI: " + reply, "bot");
+        addMessage("SHIVA AI: " + reply,"bot");
 
         if (speechEnabled && "speechSynthesis" in window) {
             speechSynthesis.cancel();
@@ -457,23 +349,21 @@ async function sendMessage() {
             utterance.lang = "en-IN";
             speechSynthesis.speak(utterance);
         }
-    } catch (error) {
-        addMessage("ERROR: " + error.message, "error");
+    } catch(error) {
+        addMessage("ERROR: " + error.message,"error");
     } finally {
         sendBtn.disabled = false;
         sendBtn.textContent = "SEND";
     }
 }
 
-sendBtn.addEventListener("click", sendMessage);
-messageInput.addEventListener("keydown", event => {
+sendBtn.addEventListener("click",sendMessage);
+messageInput.addEventListener("keydown",event => {
     if (event.key === "Enter") sendMessage();
 });
 
 /* SPEECH INPUT */
-const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let listening = false;
 
@@ -492,32 +382,31 @@ if (SpeechRecognition) {
     };
 
     recognition.onerror = event => {
-        document.getElementById("voiceStatus").textContent =
-            "Voice error: " + event.error;
+        document.getElementById("voiceStatus").textContent = "Voice error: " + event.error;
     };
 
     recognition.onend = () => {
         if (listening) {
-            try { recognition.start(); } catch (e) {}
+            try { recognition.start(); } catch(e) {}
         }
     };
 }
 
-document.getElementById("voiceBtn").addEventListener("click", () => {
+document.getElementById("voiceBtn").addEventListener("click",() => {
     if (!recognition) {
         document.getElementById("voiceStatus").textContent =
-            "Speech recognition is not supported in this browser. Try Chrome.";
+            "Speech recognition is not supported here. Try Chrome.";
         return;
     }
     if (!listening) {
         listening = true;
-        try { recognition.start(); } catch (e) {}
+        try { recognition.start(); } catch(e) {}
         document.getElementById("voiceStatus").textContent = "Listening...";
         document.getElementById("voiceBtn").textContent = "🎤 LISTENING";
     }
 });
 
-document.getElementById("stopVoiceBtn").addEventListener("click", () => {
+document.getElementById("stopVoiceBtn").addEventListener("click",() => {
     listening = false;
     if (recognition) recognition.stop();
     if ("speechSynthesis" in window) speechSynthesis.cancel();
@@ -525,7 +414,7 @@ document.getElementById("stopVoiceBtn").addEventListener("click", () => {
     document.getElementById("voiceBtn").textContent = "🎤 START VOICE";
 });
 
-document.getElementById("speakToggle").addEventListener("click", event => {
+document.getElementById("speakToggle").addEventListener("click",event => {
     speechEnabled = !speechEnabled;
     event.target.textContent = speechEnabled ? "🔊 SPEECH ON" : "🔇 SPEECH OFF";
 });
@@ -544,7 +433,7 @@ function calcClear() {
     calcDisplay.value = "0";
 }
 function calcBack() {
-    calcExpression = calcExpression.slice(0, -1);
+    calcExpression = calcExpression.slice(0,-1);
     calcDisplay.value = calcExpression || "0";
 }
 function calcEquals() {
@@ -559,7 +448,7 @@ function calcEquals() {
         if (!Number.isFinite(result)) throw new Error("Invalid");
         calcExpression = String(Number(result.toFixed(10)));
         calcDisplay.value = calcExpression;
-    } catch (e) {
+    } catch(e) {
         calcDisplay.value = "ERROR";
         calcExpression = "";
     }
@@ -573,39 +462,36 @@ let gameOver = false;
 function renderGame() {
     const container = document.getElementById("tttBoard");
     container.innerHTML = "";
-
-    board.forEach((value, index) => {
+    board.forEach((value,index) => {
         const button = document.createElement("button");
         button.textContent = value;
-        button.addEventListener("click", () => makeMove(index));
+        button.addEventListener("click",() => makeMove(index));
         container.appendChild(button);
     });
 }
 
 function makeMove(index) {
     if (board[index] || gameOver) return;
-
     board[index] = currentPlayer;
+
     if (checkWinner(currentPlayer)) {
-        document.getElementById("gameStatus").textContent =
-            "Player " + currentPlayer + " wins!";
+        document.getElementById("gameStatus").textContent = "Player " + currentPlayer + " wins!";
         gameOver = true;
     } else if (board.every(Boolean)) {
         document.getElementById("gameStatus").textContent = "It's a draw!";
         gameOver = true;
     } else {
         currentPlayer = currentPlayer === "X" ? "O" : "X";
-        document.getElementById("gameStatus").textContent =
-            "Player " + currentPlayer + "'s turn";
+        document.getElementById("gameStatus").textContent = "Player " + currentPlayer + "'s turn";
     }
     renderGame();
 }
 
 function checkWinner(player) {
     const wins = [
-        [0,1,2], [3,4,5], [6,7,8],
-        [0,3,6], [1,4,7], [2,5,8],
-        [0,4,8], [2,4,6]
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
     ];
     return wins.some(combo => combo.every(i => board[i] === player));
 }
