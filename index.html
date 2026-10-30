@@ -4,10 +4,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SHIVA AI | By Neelesh Bhatt</title>
+<title>SHIVA AI | Neelesh Bhatt</title>
 
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 :root {
@@ -83,8 +82,6 @@ input{background:#000;color:var(--green);border:1px solid var(--green);padding:1
 .calc-grid button:hover{background:#06451d}
 .calc-grid .equal{background:#07521e}
 .calc-grid .clear{color:#ff7777;border-color:var(--red)}
-.ttt-board{display:grid;grid-template-columns:repeat(3,90px);gap:8px;justify-content:center}
-.ttt-board button{height:90px;font-size:35px;color:var(--green);background:#001509;border:1px solid var(--green)}
 .center{text-align:center}
 .profile{text-align:center;padding:25px}
 .profile .initial{
@@ -99,18 +96,38 @@ input{background:#000;color:var(--green);border:1px solid var(--green);padding:1
 .copyright-box h3{color:var(--green)}
 footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#8bc99d}
 
+/* WEATHER */
+.weather-header{
+    text-align:center;background:linear-gradient(135deg,#071c35,#123d65);
+    border:1px solid #4db8ff;color:white;
+}
+.weather-header h2{color:#4db8ff;font-size:clamp(22px,5vw,35px)}
+.weather-header p{color:#d5eaff;letter-spacing:2px}
+.weather-button{
+    background:#092b4d;color:white;border:1px solid #4db8ff;
+    padding:13px 18px;margin:5px;border-radius:7px;cursor:pointer;
+}
+.weather-button:hover{background:#4db8ff;color:#00101e}
+.weather-card{
+    text-align:center;background:linear-gradient(145deg,#071c35,#102e50);
+    border:1px solid #4db8ff;color:white;
+}
+.weather-icon{font-size:75px;margin:10px}
+.temperature{font-size:clamp(48px,10vw,75px);color:#ffcc66;font-weight:bold}
+.weather-card h2,.weather-card h3{color:#4db8ff}
+.weather-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:25px}
+.weather-stat{background:#102e50;border:1px solid #356b9a;border-radius:9px;padding:15px 8px}
+.weather-stat span{font-size:28px}
+.weather-stat p{font-size:11px;color:#a8d9ff}
+.weather-stat h3{font-size:19px;color:white}
+#locationStatus,#locationDetails{color:#c4e7ff;line-height:1.7}
+
 /* BHARAT EXPLORER */
 .bharat-header{
-    text-align:center;
-    background:radial-gradient(circle at center,#16385a,#020817);
-    border:1px solid #d4a94d;
-    color:white;padding:28px 12px;
+    text-align:center;background:radial-gradient(circle at center,#16385a,#020817);
+    border:1px solid #d4a94d;color:white;padding:28px 12px;
 }
-.bharat-header h2{
-    color:#ff9933;
-    font-size:clamp(25px,5vw,38px);
-    letter-spacing:3px;
-}
+.bharat-header h2{color:#ff9933;font-size:clamp(25px,5vw,38px);letter-spacing:3px}
 .bharat-header p{color:#eee;letter-spacing:2px}
 .chakra{font-size:55px;color:#ff9933}
 .bharat-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
@@ -121,12 +138,8 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
 .bharat-button:hover{background:#ff9933;color:#111}
 #bharatMap{
     height:520px;width:100%;background:#071629;
-    border:1px solid #d4a94d;border-radius:10px;
-    overflow:hidden;z-index:1;
+    border:1px solid #d4a94d;border-radius:10px;overflow:hidden;
 }
-#bharatMap .leaflet-container{background:#071629}
-#bharatMap .leaflet-popup-content-wrapper,
-#bharatMap .leaflet-popup-tip{background:#fff;color:#111}
 .bharat-result{
     padding:12px;margin:8px 0;border:1px solid #d4a94d;
     border-radius:7px;background:#101e32;color:white;cursor:pointer;
@@ -140,8 +153,6 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
 
 @media(max-width:500px){
     main{padding:9px}.panel{padding:13px}
-    .ttt-board{grid-template-columns:repeat(3,75px)}
-    .ttt-board button{height:75px}
     #bharatMap{height:400px}
 }
 </style>
@@ -160,7 +171,7 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
     <button onclick="showPage('home')">HOME</button>
     <button onclick="showPage('chat')">AI CHAT</button>
     <button onclick="showPage('calculator')">CALCULATOR</button>
-    <button onclick="showPage('game')">TIC TAC TOE</button>
+    <button onclick="showPage('weather')">🌦️ LIVE WEATHER</button>
     <button onclick="showPage('profile')">CREATOR</button>
     <button onclick="showPage('copyright')">COPYRIGHT</button>
     <button onclick="showPage('bharat')">🇮🇳 BHARAT EXPLORER</button>
@@ -188,6 +199,7 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
         <p>Artificial Intelligence interface created by Neelesh Bhatt.</p>
         <button class="action" onclick="showPage('chat')">START AI CHAT</button>
         <br><br>
+        <button class="weather-button" onclick="showPage('weather')">🌦️ CHECK LIVE WEATHER</button>
         <button class="bharat-button" onclick="showPage('bharat')">🇮🇳 EXPLORE BHARAT</button>
     </div>
 </section>
@@ -244,14 +256,72 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
     </div>
 </section>
 
-<section id="game" class="page hidden">
-    <div class="panel center">
-        <h2>◈ TIC TAC TOE</h2>
-        <p id="gameStatus">Player X's turn</p>
-        <div class="ttt-board" id="tttBoard"></div>
-        <br>
-        <button class="action" onclick="resetGame()">RESTART GAME</button>
+<!-- WEATHER PAGE -->
+
+<section id="weather" class="page hidden">
+
+```
+<div class="panel weather-header">
+    <h2>🌦️ SHIVA WEATHER STATION</h2>
+    <p>LIVE WEATHER AND LOCATION TRACKER</p>
+    <p>YOUR WORLD · YOUR WEATHER</p>
+</div>
+
+<div class="panel center">
+    <h2>📍 YOUR CURRENT LOCATION</h2>
+    <p id="locationStatus">Waiting for location permission...</p>
+
+    <button class="weather-button" id="locateBtn">
+        📍 DETECT MY LOCATION
+    </button>
+
+    <button class="weather-button" id="refreshWeatherBtn">
+        🔄 REFRESH WEATHER
+    </button>
+</div>
+
+<div class="panel weather-card">
+    <div class="weather-icon" id="weatherIcon">🌍</div>
+    <h2 id="weatherPlace">Your Location</h2>
+    <div class="temperature" id="temperature">--°C</div>
+    <h3 id="weatherDescription">Weather unavailable</h3>
+
+    <div class="weather-grid">
+        <div class="weather-stat">
+            <span>🌡️</span>
+            <p>FEELS LIKE</p>
+            <h3 id="feelsLike">--°C</h3>
+        </div>
+        <div class="weather-stat">
+            <span>💧</span>
+            <p>HUMIDITY</p>
+            <h3 id="humidity">--%</h3>
+        </div>
+        <div class="weather-stat">
+            <span>💨</span>
+            <p>WIND SPEED</p>
+            <h3 id="windSpeed">-- km/h</h3>
+        </div>
+        <div class="weather-stat">
+            <span>☁️</span>
+            <p>CLOUD COVER</p>
+            <h3 id="cloudCover">--%</h3>
+        </div>
     </div>
+
+    <p id="coordinates" class="small-label">Coordinates: Not available</p>
+    <p id="weatherUpdated" class="small-label">Waiting for weather data...</p>
+</div>
+
+<div class="panel">
+    <h2>◈ LOCATION INFORMATION</h2>
+    <p id="locationDetails">Your location details will appear here.</p>
+    <p class="small-label">
+        Location detection requires your permission and an HTTPS connection.
+    </p>
+</div>
+```
+
 </section>
 
 <section id="profile" class="page hidden">
@@ -339,8 +409,7 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
     </p>
 
     <p class="bharat-note">
-        Map boundaries are provided by external geographical datasets.
-        Boundaries and district coverage may vary by source and date.
+        Map boundaries are supplied by external geographical datasets.
     </p>
 </div>
 
@@ -375,11 +444,11 @@ function showPage(page) {
     document.getElementById(page).classList.remove("hidden");
 
     if (page === "bharat") {
-        setTimeout(startBharatExplorer, 150);
+        setTimeout(startBharatExplorer,150);
     }
 }
 
-/* LIVE INDIA DATE AND TIME */
+/* INDIA CLOCK */
 function updateClock() {
     const now = new Date();
 
@@ -459,7 +528,7 @@ messageInput.addEventListener("keydown",event => {
     if (event.key === "Enter") sendMessage();
 });
 
-/* SPEECH INPUT */
+/* VOICE INPUT */
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -538,11 +607,13 @@ function calcBack() {
 }
 function calcEquals() {
     if (!calcExpression) return;
+
     if (!/^[0-9+\-*/%.() ]+$/.test(calcExpression)) {
         calcDisplay.value = "ERROR";
         calcExpression = "";
         return;
     }
+
     try {
         const result = Function('"use strict"; return (' + calcExpression + ')')();
         if (!Number.isFinite(result)) throw new Error("Invalid");
@@ -554,63 +625,141 @@ function calcEquals() {
     }
 }
 
-/* TIC TAC TOE */
-let board = Array(9).fill("");
-let currentPlayer = "X";
-let gameOver = false;
+/* WEATHER STATION */
+let currentLatitude = null;
+let currentLongitude = null;
 
-function renderGame() {
-    const container = document.getElementById("tttBoard");
-    container.innerHTML = "";
-    board.forEach((value,index) => {
-        const button = document.createElement("button");
-        button.textContent = value;
-        button.addEventListener("click",() => makeMove(index));
-        container.appendChild(button);
-    });
-}
+const weatherCodes = {
+    0:["☀️","Clear sky"],
+    1:["🌤️","Mainly clear"],
+    2:["⛅","Partly cloudy"],
+    3:["☁️","Overcast"],
+    45:["🌫️","Fog"],
+    48:["🌫️","Depositing rime fog"],
+    51:["🌦️","Light drizzle"],
+    53:["🌦️","Moderate drizzle"],
+    55:["🌧️","Dense drizzle"],
+    61:["🌧️","Slight rain"],
+    63:["🌧️","Moderate rain"],
+    65:["🌧️","Heavy rain"],
+    71:["🌨️","Slight snowfall"],
+    73:["❄️","Moderate snowfall"],
+    75:["❄️","Heavy snowfall"],
+    80:["🌦️","Rain showers"],
+    81:["🌧️","Moderate rain showers"],
+    82:["⛈️","Violent rain showers"],
+    95:["⛈️","Thunderstorm"],
+    96:["⛈️","Thunderstorm with hail"],
+    99:["⛈️","Heavy thunderstorm with hail"]
+};
 
-function makeMove(index) {
-    if (board[index] || gameOver) return;
-    board[index] = currentPlayer;
+function detectLocation() {
+    const status = document.getElementById("locationStatus");
 
-    if (checkWinner(currentPlayer)) {
-        document.getElementById("gameStatus").textContent =
-            "Player " + currentPlayer + " wins!";
-        gameOver = true;
-    } else if (board.every(Boolean)) {
-        document.getElementById("gameStatus").textContent = "It's a draw!";
-        gameOver = true;
-    } else {
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-        document.getElementById("gameStatus").textContent =
-            "Player " + currentPlayer + "'s turn";
+    if (!navigator.geolocation) {
+        status.textContent = "Location is not supported by your browser.";
+        return;
     }
-    renderGame();
+
+    status.textContent = "Detecting your location...";
+
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            currentLatitude = position.coords.latitude;
+            currentLongitude = position.coords.longitude;
+
+            document.getElementById("coordinates").textContent =
+                "Latitude: " + currentLatitude.toFixed(4) +
+                " | Longitude: " + currentLongitude.toFixed(4);
+
+            document.getElementById("locationDetails").textContent =
+                "Your device location was detected successfully.";
+
+            status.textContent = "Location detected successfully!";
+            getLiveWeather();
+        },
+        error => {
+            const messages = {
+                1:"Location permission denied. Please allow location access.",
+                2:"Your current location could not be determined.",
+                3:"Location request timed out. Try again."
+            };
+            status.textContent = messages[error.code] || "Unable to detect location.";
+        },
+        {
+            enableHighAccuracy:true,
+            timeout:15000,
+            maximumAge:300000
+        }
+    );
 }
 
-function checkWinner(player) {
-    const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-    ];
-    return wins.some(combo => combo.every(i => board[i] === player));
+async function getLiveWeather() {
+    if (currentLatitude === null || currentLongitude === null) {
+        detectLocation();
+        return;
+    }
+
+    document.getElementById("weatherDescription").textContent =
+        "Loading current weather...";
+
+    const url =
+        "https://api.open-meteo.com/v1/forecast" +
+        "?latitude=" + currentLatitude +
+        "&longitude=" + currentLongitude +
+        "&current=temperature_2m,relative_humidity_2m," +
+        "apparent_temperature,is_day,precipitation," +
+        "weather_code,cloud_cover,wind_speed_10m" +
+        "&timezone=auto";
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Weather service unavailable.");
+
+        const data = await response.json();
+        if (!data.current) throw new Error("Weather information not available.");
+
+        const weather = data.current;
+        const code = weatherCodes[weather.weather_code] ||
+            ["🌍","Weather condition unavailable"];
+
+        document.getElementById("weatherIcon").textContent = code[0];
+        document.getElementById("weatherDescription").textContent = code[1];
+        document.getElementById("temperature").textContent =
+            Math.round(weather.temperature_2m) + "°C";
+        document.getElementById("feelsLike").textContent =
+            Math.round(weather.apparent_temperature) + "°C";
+        document.getElementById("humidity").textContent =
+            weather.relative_humidity_2m + "%";
+        document.getElementById("windSpeed").textContent =
+            weather.wind_speed_10m + " km/h";
+        document.getElementById("cloudCover").textContent =
+            weather.cloud_cover + "%";
+
+        document.getElementById("weatherUpdated").textContent =
+            "Last updated: " + new Date().toLocaleTimeString("en-IN");
+
+        document.getElementById("weatherPlace").textContent =
+            "YOUR CURRENT WEATHER";
+
+        document.getElementById("locationStatus").textContent =
+            "Location and weather successfully updated.";
+
+    } catch(error) {
+        document.getElementById("weatherDescription").textContent =
+            "Unable to load weather.";
+        document.getElementById("locationStatus").textContent =
+            error.message;
+    }
 }
 
-function resetGame() {
-    board = Array(9).fill("");
-    currentPlayer = "X";
-    gameOver = false;
-    document.getElementById("gameStatus").textContent = "Player X's turn";
-    renderGame();
-}
-renderGame();
+document.getElementById("locateBtn")
+.addEventListener("click",detectLocation);
 
-/* =================================
-   BHARAT EXPLORER
-================================= */
+document.getElementById("refreshWeatherBtn")
+.addEventListener("click",getLiveWeather);
 
+/* BHARAT EXPLORER */
 let bharatMap = null;
 let bharatLayer = null;
 let bharatLevel = "india";
@@ -644,7 +793,6 @@ function mapName(name) {
         "Dadra and Nagar Haveli and Daman and Diu":
             "dadra-and-nagar-haveli-and-daman-and-diu"
     };
-
     return special[name] ||
         name.toLowerCase().replace(/ & /g,"-").replace(/ /g,"-");
 }
@@ -661,18 +809,12 @@ function startBharatExplorer() {
         return;
     }
 
-    bharatMap = L.map("bharatMap", {
-        zoomControl:true,
-        scrollWheelZoom:true
-    }).setView([22.5,82.5],4);
+    bharatMap = L.map("bharatMap").setView([22.5,82.5],4);
 
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            attribution:"© OpenStreetMap contributors",
-            maxZoom:18
-        }
-    ).addTo(bharatMap);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+        attribution:"© OpenStreetMap contributors",
+        maxZoom:18
+    }).addTo(bharatMap);
 
     loadIndiaMap();
 }
@@ -702,22 +844,17 @@ function bharatBack() {
     const previous = bharatHistory.pop();
 
     if (previous.level === "india") {
-        bharatLevel = "india";
         selectedState = "";
         loadIndiaMap();
     } else {
         selectedState = previous.state;
-        bharatLevel = "state";
         loadStateMap(previous.state,true);
     }
 }
 
 function loadIndiaMap() {
     bharatLevel = "india";
-
-    document.getElementById("bharatTitle").textContent =
-        "🇮🇳 EXPLORE INDIA";
-
+    document.getElementById("bharatTitle").textContent = "🇮🇳 EXPLORE INDIA";
     document.getElementById("bharatDescription").textContent =
         "Select a state or Union Territory.";
 
@@ -728,21 +865,14 @@ function loadIndiaMap() {
 }
 
 function loadStateMap(state,fromBack=false) {
-    if (!fromBack) {
-        bharatHistory.push({level:"india",state:""});
-    }
+    if (!fromBack) bharatHistory.push({level:"india",state:""});
 
     selectedState = state;
     bharatLevel = "state";
 
-    document.getElementById("bharatTitle").textContent =
-        state.toUpperCase();
-
+    document.getElementById("bharatTitle").textContent = state.toUpperCase();
     document.getElementById("bharatDescription").textContent =
         "Select a district to explore it.";
-
-    document.getElementById("districtInfo").innerHTML =
-        "<h2>◈ " + escapeHTML(state) + "</h2><p>Select a district on the map.</p>";
 
     const url = STATE_MAP_BASE + mapName(state) + ".geojson";
     loadGeoJSON(url,"state");
@@ -754,16 +884,11 @@ async function loadGeoJSON(url,level) {
 
     try {
         const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error("Map data was not found at the configured address.");
-        }
+        if (!response.ok) throw new Error("Map data unavailable.");
 
         const data = await response.json();
 
-        if (bharatLayer) {
-            bharatMap.removeLayer(bharatLayer);
-        }
+        if (bharatLayer) bharatMap.removeLayer(bharatLayer);
 
         searchFeatures = [];
 
@@ -774,23 +899,12 @@ async function loadGeoJSON(url,level) {
                 const props = feature.properties || {};
 
                 const name =
-                    props.name ||
-                    props.NAME ||
-                    props.ST_NM ||
-                    props.district ||
-                    props.DISTRICT ||
-                    props.state ||
-                    props.STATE ||
-                    props.dtname ||
-                    props.DTNAME ||
-                    "Unknown region";
+                    props.name || props.NAME || props.ST_NM ||
+                    props.district || props.DISTRICT ||
+                    props.state || props.STATE ||
+                    props.dtname || props.DTNAME || "Unknown region";
 
-                searchFeatures.push({
-                    name:name,
-                    feature:feature,
-                    level:level
-                });
-
+                searchFeatures.push({name,feature,level});
                 layer.bindTooltip(escapeHTML(name));
 
                 layer.on("click",function() {
@@ -798,12 +912,8 @@ async function loadGeoJSON(url,level) {
                         const match = stateNames.find(item =>
                             item.toLowerCase() === name.toLowerCase()
                         );
-
-                        if (match) {
-                            loadStateMap(match);
-                        } else {
-                            showDistrictInfo(name);
-                        }
+                        if (match) loadStateMap(match);
+                        else showDistrictInfo(name);
                     } else {
                         showDistrictInfo(name);
                     }
@@ -823,62 +933,43 @@ async function loadGeoJSON(url,level) {
             }
         }).addTo(bharatMap);
 
-        const bounds = bharatLayer.getBounds();
-
-        if (bounds.isValid()) {
-            bharatMap.fitBounds(bounds,{padding:[15,15]});
+        if (bharatLayer.getBounds().isValid()) {
+            bharatMap.fitBounds(bharatLayer.getBounds(),{padding:[15,15]});
         }
 
         status.textContent = level === "india"
-            ? "India map loaded. Select a state or Union Territory."
+            ? "India map loaded. Select a region."
             : "State map loaded. Select a district.";
 
         renderSearchResults("");
 
     } catch(error) {
-        status.textContent =
-            "Could not load this map: " + error.message;
-
-        console.error("Bharat Explorer map error:",error);
+        status.textContent = "Could not load map: " + error.message;
+        console.error("Bharat Explorer:",error);
     }
 }
 
 function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g,char => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
+        "&":"&amp;","<":"&lt;",">":"&gt;",
+        '"':"&quot;","'":"&#39;"
     })[char]);
 }
 
 function showDistrictInfo(district) {
-    const box = document.getElementById("districtInfo");
-
-    box.innerHTML = `
+    document.getElementById("districtInfo").innerHTML = `
         <h2>🇮🇳 ${escapeHTML(district)}</h2>
         <p><strong>State / UT:</strong> ${escapeHTML(selectedState || "India")}</p>
-
         <h3>Famous places</h3>
         <p>Verified tourist attractions for this district will be added here.</p>
-
         <h3>Local food</h3>
         <p>Verified local dishes and traditional cuisine will be added here.</p>
-
         <h3>Culture and festivals</h3>
         <p>Local traditions, celebrations and heritage will be added here.</p>
-
         <h3>Famous crafts and products</h3>
         <p>Verified local crafts and products will be added here.</p>
-
-        <p class="bharat-note">
-        District facts are not yet available in this version.
-        They should be researched and verified before publication.
-        </p>
+        <p class="bharat-note">District facts are not yet available in this version.</p>
     `;
-
-    box.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
 function renderSearchResults(query) {
@@ -915,7 +1006,7 @@ function renderSearchResults(query) {
 
     if (!results.length) {
         container.textContent = q
-            ? "No matching regions in the currently loaded map."
+            ? "No matching regions in the loaded map."
             : "Map results will appear here.";
     }
 }
