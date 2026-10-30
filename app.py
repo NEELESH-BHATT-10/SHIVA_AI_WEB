@@ -2,7 +2,113 @@ import os
 import re
 import requests
 from flask import Flask, jsonify, request, send_from_directory
+from flask import Response
+import requests
+import html
 
+INDIA_GEOJSON_URL = (
+    "https://raw.githubusercontent.com/geohacker/india/master/state/india_state.geojson"
+)
+
+
+@app.route("/bharat-map")
+def bharat_map():
+    try:
+        response = requests.get(INDIA_GEOJSON_URL, timeout=20)
+        response.raise_for_status()
+        geojson = response.json()
+
+        width = 900
+        height = 850
+        padding = 30
+
+        min_lon, max_lon = 68, 98
+        min_lat, max_lat = 6, 38
+
+        def project(lon, lat):
+            x = padding + (lon - min_lon) / (max_lon - min_lon) * (
+                width - 2 * padding
+            )
+            y = height - padding - (lat - min_lat) / (
+                max_lat - min_lat
+            ) * (height - 2 * padding)
+            return x, y
+
+        paths = []
+
+        for feature in geojson.get("features", []):
+            properties = feature.get("properties", {})
+            state_name = (
+                properties.get("name")
+                or properties.get("NAME_1")
+                or properties.get("NAME")
+                or "Indian state"
+            )
+
+            geometry = feature.get("geometry", {})
+            geometry_type = geometry.get("type")
+            coordinates = geometry.get("coordinates", [])
+
+            if geometry_type == "Polygon":
+                polygons = [coordinates]
+            elif geometry_type == "MultiPolygon":
+                polygons = coordinates
+            else:
+                continue
+
+            for polygon in polygons:
+                for ring in polygon:
+                    points = []
+
+                    for lon, lat in ring:
+                        x, y = project(lon, lat)
+                        points.append(f"{x:.1f},{y:.1f}")
+
+                    if points:
+                        point_string = " ".join(points)
+                        safe_name = html.escape(str(state_name), quote=True)
+
+                        paths.append(
+                            f'<polygon points="{point_string}" '
+                            f'fill="#173b2b" stroke="#35ff83" '
+                            f'stroke-width="1.5">'
+                            f'<title>{safe_name}</title>'
+                            f'</polygon>'
+                        )
+
+        svg = f"""
+        <svg viewBox="0 0 {width} {height}"
+             xmlns="http://www.w3.org/2000/svg"
+             style="width:100%;height:auto;background:#07120c">
+            {''.join(paths)}
+        </svg>
+        """
+
+        page = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>SHIVA AI - Bharat Explorer</title>
+        </head>
+        <body style="margin:0;background:#07120c;color:#35ff83;
+                     font-family:Arial;text-align:center">
+            <h2>🇮🇳 BHARAT EXPLORER</h2>
+            <p>India's state boundaries</p>
+            {svg}
+            <p>SHIVA AI | BY NEELESH BHATT</p>
+        </body>
+        </html>
+        """
+
+        return Response(page, mimetype="text/html")
+
+    except Exception as error:
+        return Response(
+            f"<h2>India map could not load</h2><p>{html.escape(str(error))}</p>",
+            status=500,
+            mimetype="text/html"
+        )
 app = Flask(__name__)
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
