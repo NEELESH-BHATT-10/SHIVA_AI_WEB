@@ -3,1153 +3,621 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#020807">
-<title>SHIVA AI by Neelesh Bhatt</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHIVA AI | By Neelesh Bhatt</title>
 <style>
 :root {
-    --green:#00ff88;
-    --blue:#00bfff;
-    --red:#ff304f;
-    --black:#020807;
-    --border:rgba(0,255,136,.25);
-    --text:#d7fff0;
-    --muted:#70a99a;
+    --green: #00ff66;
+    --red: #ff2020;
+    --bg: #020704;
+    --panel: rgba(0, 20, 8, .94);
+    --border: rgba(0,255,102,.35);
 }
-
-* { box-sizing:border-box; }
-
+* { box-sizing: border-box; }
 body {
-    margin:0;
-    min-height:100vh;
-    color:var(--text);
-    background:radial-gradient(ellipse at 50% 0%,#06322b,transparent 55%),var(--black);
-    font-family:Consolas,"Courier New",monospace;
+    margin: 0;
+    background: var(--bg);
+    color: var(--green);
+    font-family: Consolas, monospace;
+    min-height: 100vh;
 }
-
-#matrix,.scanlines {
-    position:fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    pointer-events:none;
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .12;
+    background: repeating-linear-gradient(
+        transparent 0px,
+        transparent 3px,
+        rgba(0,255,80,.18) 4px
+    );
+    z-index: 5;
 }
-
-#matrix { opacity:.12; z-index:0; }
-
-.scanlines {
-    z-index:1;
-    opacity:.06;
-    background:repeating-linear-gradient(transparent 0 3px,#00ff88 4px);
-}
-
-header,main,footer { position:relative; z-index:2; }
-
 header {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:15px;
-    padding:20px 5%;
-    background:#010808ed;
-    border-bottom:1px solid var(--border);
+    text-align: center;
+    padding: 22px 12px;
+    border-bottom: 1px solid var(--border);
 }
-
-.brand {
-    color:var(--red);
-    font-size:clamp(24px,4vw,34px);
-    font-weight:900;
-    letter-spacing:4px;
+header h1 {
+    color: var(--red);
+    letter-spacing: 5px;
+    margin: 0;
+    font-size: clamp(25px, 5vw, 42px);
+    text-shadow: 0 0 14px var(--red);
 }
-
-.creator {
-    color:var(--red);
-    font-size:12px;
-    letter-spacing:2px;
-    margin-top:8px;
+header p { color: var(--green); margin-bottom: 0; }
+nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px;
 }
-
-.tagline {
-    color:var(--green);
-    font-size:10px;
-    letter-spacing:2px;
-    margin-top:8px;
-}
-
-.live-status {
-    color:var(--green);
-    font-size:11px;
-    border:1px solid #00ff8850;
-    padding:10px;
-    border-radius:5px;
-}
-
-main {
-    width:min(1250px,94%);
-    margin:25px auto;
-}
-
-.system-strip {
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:10px;
-    margin-bottom:18px;
-}
-
-.strip-item {
-    background:#061411e8;
-    border:1px solid var(--border);
-    padding:12px;
-    text-align:center;
-}
-
-.strip-label,.stat-name {
-    color:var(--muted);
-    font-size:9px;
-    letter-spacing:2px;
-}
-
-.strip-value,.stat-value {
-    color:var(--green);
-    font-size:12px;
-    margin-top:8px;
-    overflow-wrap:anywhere;
-}
-
-.dashboard {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);
-    gap:18px;
-    align-items:stretch;
-}
-
-.panel {
-    min-width:0;
-    padding:19px;
-    border:1px solid var(--border);
-    background:linear-gradient(145deg,#071715f5,#020b0cf5);
-    border-radius:8px;
-}
-
-.panel-title {
-    color:var(--green);
-    font-size:12px;
-    letter-spacing:2px;
-    padding-bottom:13px;
-    margin-bottom:15px;
-    border-bottom:1px solid var(--border);
-}
-
-.radar-wrap {
-    display:grid;
-    place-items:center;
-    padding:10px 0 18px;
-}
-
-.radar {
-    position:relative;
-    width:min(300px,75vw);
-    aspect-ratio:1;
-    border-radius:50%;
-    overflow:hidden;
-    border:2px solid #00bfff9c;
-    background-color:#031522;
-    background-image:
-        linear-gradient(#00bfff24 1px,transparent 1px),
-        linear-gradient(90deg,#00bfff24 1px,transparent 1px),
-        repeating-radial-gradient(circle,transparent 0 34px,#00bfff4d 35px 36px),
-        linear-gradient(90deg,transparent 49.8%,#00bfff70 50%,transparent 50.2%),
-        linear-gradient(transparent 49.8%,#00bfff70 50%,transparent 50.2%);
-    background-size:22px 22px,22px 22px,auto,auto,auto;
-    box-shadow:0 0 22px #00bfff32,inset 0 0 35px #00bfff22;
-}
-
-.radar-sweep {
-    position:absolute;
-    inset:0;
-    border-radius:50%;
-    background:conic-gradient(from 0deg,transparent 275deg,#00bfff08 305deg,#00bfff3b 345deg,#00d5ff9c 359deg,transparent 360deg);
-    animation:spin 4s linear infinite;
-}
-
-@keyframes spin {
-    to { transform:rotate(360deg); }
-}
-
-.radar-center {
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:10px;
-    height:10px;
-    transform:translate(-50%,-50%);
-    background:#fff;
-    border-radius:50%;
-    box-shadow:0 0 15px 5px var(--blue);
-}
-
-.target {
-    position:absolute;
-    width:15px;
-    height:15px;
-    border-radius:50%;
-    background:var(--red);
-    border:2px solid #ffb0bc;
-    box-shadow:0 0 13px 4px #ff304f90;
-    animation:pulse 1.6s ease-in-out infinite alternate;
-}
-
-.target.t1 { left:70%;top:26%; }
-.target.t2 { left:29%;top:63%;animation-delay:.5s; }
-.target.t3 { left:74%;top:72%;animation-delay:1s; }
-
-@keyframes pulse {
-    to { opacity:.5;transform:scale(1.15); }
-}
-
-.radar-caption,.radar-legend {
-    color:var(--blue);
-    font-size:10px;
-    letter-spacing:2px;
-    text-align:center;
-    margin-top:15px;
-}
-
-.radar-legend {
-    display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
-    gap:14px;
-    color:var(--muted);
-}
-
-/* LIVE CLOCK */
-
-.clock-box {
-    width:100%;
-    max-width:330px;
-    margin:12px auto 0;
-    padding:13px;
-    text-align:center;
-    border:1px solid #00ff8870;
-    background:#03130d;
-    border-radius:6px;
-    box-shadow:0 0 15px #00ff8815;
-}
-
-.clock-label {
-    color:var(--muted);
-    font-size:10px;
-    letter-spacing:2px;
-}
-
-#liveTime {
-    color:var(--green);
-    font-size:clamp(22px,5vw,30px);
-    font-weight:bold;
-    margin:8px 0;
-    text-shadow:0 0 12px #00ff8870;
-}
-
-#liveDate {
-    color:var(--green);
-    font-size:11px;
-}
-
-/* STATS */
-
-.stats {
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:9px;
-    margin-top:12px;
-}
-
-.stat {
-    border:1px solid #174035;
-    padding:12px;
-    background:#03100d;
-}
-
-/* CHAT */
-
-.chat-panel {
-    display:flex;
-    flex-direction:column;
-    min-height:590px;
-}
-
-.chat-log {
-    flex:1;
-    min-height:280px;
-    max-height:450px;
-    overflow-y:auto;
-    padding:5px 3px 15px;
-}
-
-.message {
-    padding:12px;
-    margin-bottom:13px;
-    background:#051511;
-    border-left:2px solid var(--green);
-    border-radius:0 6px 6px 0;
-    overflow-wrap:anywhere;
-    white-space:pre-wrap;
-    line-height:1.65;
-    font-size:13px;
-}
-
-.message.user {
-    border-left-color:var(--blue);
-    background:#04121b;
-}
-
-.message.error { border-left-color:var(--red); }
-
-.message-label {
-    font-size:10px;
-    letter-spacing:2px;
-    color:var(--green);
-    margin-bottom:7px;
-}
-
-.message.user .message-label { color:var(--blue); }
-.message.error .message-label { color:var(--red); }
-
-.controls {
-    border-top:1px solid var(--border);
-    padding-top:14px;
-}
-
-input,button { font-family:inherit;font-size:13px; }
-
-input {
-    width:100%;
-    min-width:0;
-    padding:13px;
-    color:var(--text);
-    background:#020b09;
-    border:1px solid #1b4a3b;
-    border-radius:5px;
-    outline:none;
-}
-
-input:focus { border-color:var(--green); }
-
-.input-row {
-    display:flex;
-    gap:8px;
-}
-
 button {
-    min-height:44px;
-    padding:10px 14px;
-    color:var(--green);
-    background:#05271d;
-    border:1px solid var(--green);
-    border-radius:5px;
-    font-weight:bold;
-    letter-spacing:.5px;
-    cursor:pointer;
+    cursor: pointer;
+    font-family: inherit;
 }
-
-button:hover { background:#07442f; }
-button:disabled { opacity:.55;cursor:wait; }
-
-.voice-controls {
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px;
-    margin-bottom:14px;
+nav button, .action {
+    color: var(--green);
+    background: #03140a;
+    border: 1px solid var(--green);
+    padding: 10px 15px;
+    border-radius: 5px;
 }
-
-#stopVoiceButton {
-    color:var(--red);
-    border-color:var(--red);
-    background:#26080d;
+nav button:hover, .action:hover {
+    background: var(--green);
+    color: black;
 }
-
-#voiceStatus {
-    grid-column:1/-1;
-    color:var(--green);
-    font-size:12px;
-    line-height:1.6;
-    overflow-wrap:anywhere;
+main {
+    max-width: 1050px;
+    margin: auto;
+    padding: 15px;
 }
-
-.hint {
-    margin-top:12px;
-    color:var(--muted);
-    font-size:10px;
-    line-height:1.7;
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 0 15px rgba(0,255,102,.07);
 }
-
-/* CALCULATOR */
-
+h2 {
+    color: var(--red);
+    margin-top: 0;
+}
+.top-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px;
+    align-items: center;
+}
+.radar-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.radar {
+    width: 190px;
+    height: 190px;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(90deg, transparent 49.5%, #00ff6640 50%, transparent 50.5%),
+        linear-gradient(0deg, transparent 49.5%, #00ff6640 50%, transparent 50.5%),
+        radial-gradient(circle, transparent 25%, #00ff6630 26%, transparent 27%, transparent 49%, #00ff6630 50%, transparent 51%);
+}
+.radar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: conic-gradient(from 0deg, transparent 0deg, #00ff6644 55deg, transparent 70deg);
+    border-radius: 50%;
+    animation: spin 3s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.radar-dot {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    left: 65%;
+    top: 30%;
+    box-shadow: 0 0 10px var(--red);
+    z-index: 2;
+}
+.clock {
+    text-align: center;
+    padding: 18px;
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    background: #001407;
+}
+.clock-time {
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: bold;
+    color: var(--green);
+    text-shadow: 0 0 12px var(--green);
+}
+.clock-date { margin-top: 10px; font-size: 14px; }
+.small-label { color: #91cfa5; font-size: 12px; }
+#chatBox {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    padding: 12px;
+    background: #000;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+.message {
+    margin: 10px 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+.user { color: #fff; }
+.bot { color: var(--green); }
+.error { color: #ff6464; }
+.chat-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+input, textarea {
+    background: #000;
+    color: var(--green);
+    border: 1px solid var(--green);
+    padding: 12px;
+    font-family: inherit;
+    border-radius: 5px;
+    min-width: 0;
+}
+#messageInput { flex: 1; width: 200px; }
+.voice-status { color: #b2d9bb; font-size: 13px; }
+.hidden { display: none !important; }
 .calculator {
-    margin-top:18px;
+    max-width: 340px;
+    margin: auto;
 }
-
-.calc-display {
-    width:100%;
-    padding:15px;
-    margin-bottom:10px;
-    text-align:right;
-    font-size:23px;
-    color:var(--green);
-    background:#010907;
-    border:1px solid #00ff8860;
-    border-radius:5px;
-    overflow:hidden;
+#calcDisplay {
+    width: 100%;
+    font-size: 27px;
+    text-align: right;
+    margin-bottom: 10px;
 }
-
 .calc-grid {
-    display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:7px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
 }
-
 .calc-grid button {
-    min-width:0;
-    min-height:48px;
-    font-size:16px;
+    padding: 17px 8px;
+    font-size: 18px;
+    color: var(--green);
+    background: #001509;
+    border: 1px solid var(--green);
+    border-radius: 5px;
 }
-
-.calc-grid .operator {
-    color:var(--blue);
-    border-color:var(--blue);
+.calc-grid button:hover { background: #06451d; }
+.calc-grid .equal { background: #07521e; }
+.calc-grid .clear { color: #ff7777; border-color: var(--red); }
+.ttt-board {
+    display: grid;
+    grid-template-columns: repeat(3, 90px);
+    gap: 8px;
+    justify-content: center;
 }
-
-.calc-grid .clear {
-    color:var(--red);
-    border-color:var(--red);
+.ttt-board button {
+    height: 90px;
+    font-size: 35px;
+    color: var(--green);
+    background: #001509;
+    border: 1px solid var(--green);
 }
-
-.calc-grid .equals {
-    color:#020807;
-    background:var(--green);
+.center { text-align: center; }
+.profile {
+    text-align: center;
+    padding: 25px;
 }
-
+.profile .initial {
+    border: 2px solid var(--green);
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    margin: auto auto 15px;
+    display: grid;
+    place-items: center;
+    font-size: 35px;
+    box-shadow: 0 0 15px #00ff6655;
+}
 footer {
-    text-align:center;
-    padding:22px 12px 30px;
-    color:var(--muted);
-    font-size:10px;
-    letter-spacing:2px;
-    line-height:2;
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    color: #8bc99d;
 }
-
-.free { color:var(--green); }
-.author { color:var(--red); }
-
-@media(max-width:800px) {
-    .dashboard { grid-template-columns:1fr; }
-    .chat-panel { min-height:500px; }
-    .chat-log { max-height:360px; }
-}
-
-@media(max-width:420px) {
-    header { padding:16px 4%; }
-    main { width:94%; }
-    .panel { padding:13px; }
-    .system-strip { gap:5px; }
-    .strip-item { padding:9px 4px; }
-    .strip-label { font-size:8px;letter-spacing:1px; }
-    .strip-value { font-size:10px; }
-    .input-row { flex-direction:column; }
-    button { width:100%; }
-}
-
-@media(prefers-reduced-motion:reduce) {
-    *,*::before,*::after {
-        animation-duration:.01ms!important;
-        animation-iteration-count:1!important;
-    }
+@media(max-width:500px) {
+    main { padding: 9px; }
+    .panel { padding: 13px; }
+    .ttt-board { grid-template-columns: repeat(3, 75px); }
+    .ttt-board button { height: 75px; }
 }
 </style>
-
 </head>
-
 <body>
 
-<canvas id="matrix" aria-hidden="true"></canvas>
-
-<div class="scanlines" aria-hidden="true"></div>
-
 <header>
-    <div>
-        <div class="brand">SHIVA AI</div>
-        <div class="creator">BY NEELESH BHATT</div>
-        <div class="tagline">HACKER AESTHETIC · NAVAL RADAR · AI CORE</div>
-    </div>
-    <div class="live-status">● INTERFACE ACTIVE</div>
+    <h1>SHIVA AI</h1>
+    <p>ADVANCED PERSONAL AI SYSTEM</p>
+    <p style="color:#ff4444">BY NEELESH BHATT</p>
 </header>
 
+<nav>
+    <button onclick="showPage('home')">HOME</button>
+    <button onclick="showPage('chat')">AI CHAT</button>
+    <button onclick="showPage('calculator')">CALCULATOR</button>
+    <button onclick="showPage('game')">TIC TAC TOE</button>
+    <button onclick="showPage('profile')">CREATOR</button>
+</nav>
+
 <main>
+<section id="home" class="page">
+    <div class="panel">
+        <h2>◈ SYSTEM OVERVIEW</h2>
+        <div class="top-grid">
+            <div class="radar-wrap">
+                <div class="radar">
+                    <div class="radar-dot"></div>
+                </div>
+            </div>
+            <div class="clock">
+                <div class="small-label">INDIA STANDARD TIME</div>
+                <div id="clockTime" class="clock-time">--:--:--</div>
+                <div id="clockDate" class="clock-date">Loading date...</div>
+                <div class="small-label">ASIA / KOLKATA · UTC+5:30</div>
+            </div>
+        </div>
+    </div>
 
 ```
-<section class="system-strip">
-    <div class="strip-item">
-        <div class="strip-label">SYSTEM</div>
-        <div class="strip-value">SHIVA CORE</div>
-    </div>
-    <div class="strip-item">
-        <div class="strip-label">RADAR</div>
-        <div class="strip-value">BLUE / RED TARGETS</div>
-    </div>
-    <div class="strip-item">
-        <div class="strip-label">AI CONNECTION</div>
-        <div class="strip-value" id="connection">NOT TESTED</div>
-    </div>
-</section>
-
-<div class="dashboard">
-
-    <!-- RADAR AND CLOCK -->
-
-    <section class="panel">
-        <div class="panel-title">01 // NAVAL RADAR SYSTEM</div>
-
-        <div class="radar-wrap">
-            <div class="radar" role="img" aria-label="Animated decorative radar">
-                <div class="radar-sweep"></div>
-                <div class="radar-center"></div>
-                <div class="target t1"></div>
-                <div class="target t2"></div>
-                <div class="target t3"></div>
-            </div>
-
-            <div class="radar-caption">
-                SCANNING · TARGET TRACKING SIMULATION
-            </div>
-
-            <div class="radar-legend">
-                <span>● SIMULATED TARGET</span>
-                <span>● RADAR SWEEP</span>
-            </div>
-        </div>
-
-        <div class="clock-box">
-            <div class="clock-label">INDIA STANDARD TIME · IST</div>
-            <div id="liveTime">--:--:--</div>
-            <div id="liveDate">Loading date...</div>
-        </div>
-
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-name">AI ENGINE</div>
-                <div class="stat-value">OPENROUTER</div>
-            </div>
-            <div class="stat">
-                <div class="stat-name">MODEL</div>
-                <div class="stat-value">FREE MODEL ROUTER</div>
-            </div>
-            <div class="stat">
-                <div class="stat-name">INTERFACE</div>
-                <div class="stat-value">MATRIX GREEN</div>
-            </div>
-            <div class="stat">
-                <div class="stat-name">NETWORK</div>
-                <div class="stat-value" id="networkStatus">AI SERVER</div>
-            </div>
-        </div>
-
-        <!-- CALCULATOR -->
-
-        <div class="calculator">
-            <div class="panel-title">03 // SHIVA CALCULATOR</div>
-
-            <input
-                id="calcDisplay"
-                class="calc-display"
-                type="text"
-                value="0"
-                readonly
-                aria-label="Calculator display"
-            >
-
-            <div class="calc-grid">
-                <button class="clear" data-calc="AC">AC</button>
-                <button class="operator" data-calc="DEL">DEL</button>
-                <button class="operator" data-calc="%">%</button>
-                <button class="operator" data-calc="/">÷</button>
-
-                <button data-calc="7">7</button>
-                <button data-calc="8">8</button>
-                <button data-calc="9">9</button>
-                <button class="operator" data-calc="*">×</button>
-
-                <button data-calc="4">4</button>
-                <button data-calc="5">5</button>
-                <button data-calc="6">6</button>
-                <button class="operator" data-calc="-">−</button>
-
-                <button data-calc="1">1</button>
-                <button data-calc="2">2</button>
-                <button data-calc="3">3</button>
-                <button class="operator" data-calc="+">+</button>
-
-                <button data-calc="0">0</button>
-                <button data-calc="00">00</button>
-                <button data-calc=".">.</button>
-                <button class="equals" data-calc="=">=</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- AI CHAT -->
-
-    <section class="panel chat-panel">
-        <div class="panel-title">02 // SHIVA AI COMMUNICATION</div>
-
-        <div class="chat-log" id="chatLog" aria-live="polite">
-            <div class="message">
-                <div class="message-label">SHIVA CORE</div>
-                System initialized.
-                Welcome to SHIVA AI by Neelesh Bhatt.
-                Type or speak your question to begin.
-            </div>
-        </div>
-
-        <div class="controls">
-
-            <div class="voice-controls">
-                <button type="button" id="voiceButton">
-                    🎤 START VOICE CHAT
-                </button>
-
-                <button type="button" id="stopVoiceButton">
-                    ⏹ STOP VOICE
-                </button>
-
-                <div id="voiceStatus" role="status">
-                    Voice chat is off.
-                </div>
-            </div>
-
-            <form id="chatForm">
-                <div class="input-row">
-                    <input
-                        id="messageInput"
-                        type="text"
-                        maxlength="4000"
-                        placeholder="Ask SHIVA anything..."
-                        autocomplete="off"
-                        required
-                        aria-label="Your question"
-                    >
-
-                    <button id="sendButton" type="submit">
-                        SEND ↗
-                    </button>
-                </div>
-            </form>
-
-            <div class="hint">
-                Voice features depend on browser support and microphone permission.
-                Speech recognition may use your browser provider.
-                Free AI model availability and quotas may vary.
-                Do not enter passwords or sensitive personal information.
-            </div>
-
-        </div>
-    </section>
-
+<div class="panel center">
+    <h2>WELCOME TO SHIVA AI</h2>
+    <p>Artificial Intelligence interface created by Neelesh Bhatt.</p>
+    <button class="action" onclick="showPage('chat')">START AI CHAT</button>
 </div>
 ```
 
+</section>
+
+<section id="chat" class="page hidden">
+    <div class="panel">
+        <h2>◈ SHIVA AI CHAT</h2>
+        <div id="chatBox">
+            <div class="message bot">SHIVA AI ONLINE. Welcome! How can I help you?</div>
+        </div>
+        <div class="chat-controls">
+            <input id="messageInput" placeholder="Enter your message..." autocomplete="off">
+            <button class="action" id="sendBtn">SEND</button>
+        </div>
+        <br>
+        <div class="chat-controls">
+            <button class="action" id="voiceBtn">🎤 START VOICE</button>
+            <button class="action" id="stopVoiceBtn">STOP VOICE</button>
+            <button class="action" id="speakToggle">🔊 SPEECH ON</button>
+        </div>
+        <p id="voiceStatus" class="voice-status">Voice status: Ready</p>
+        <p class="small-label">Voice recognition availability depends on your browser and device.</p>
+    </div>
+</section>
+
+<section id="calculator" class="page hidden">
+    <div class="panel">
+        <h2>◈ SHIVA CALCULATOR</h2>
+        <div class="calculator">
+            <input id="calcDisplay" value="0" readonly>
+            <div class="calc-grid">
+                <button class="clear" onclick="calcClear()">AC</button>
+                <button onclick="calcBack()">⌫</button>
+                <button onclick="calcInput('%')">%</button>
+                <button onclick="calcInput('/')">÷</button>
+
+```
+            <button onclick="calcInput('7')">7</button>
+            <button onclick="calcInput('8')">8</button>
+            <button onclick="calcInput('9')">9</button>
+            <button onclick="calcInput('*')">×</button>
+
+            <button onclick="calcInput('4')">4</button>
+            <button onclick="calcInput('5')">5</button>
+            <button onclick="calcInput('6')">6</button>
+            <button onclick="calcInput('-')">−</button>
+
+            <button onclick="calcInput('1')">1</button>
+            <button onclick="calcInput('2')">2</button>
+            <button onclick="calcInput('3')">3</button>
+            <button onclick="calcInput('+')">+</button>
+
+            <button onclick="calcInput('0')">0</button>
+            <button onclick="calcInput('00')">00</button>
+            <button onclick="calcInput('.')">.</button>
+            <button class="equal" onclick="calcEquals()">=</button>
+        </div>
+    </div>
+</div>
+```
+
+</section>
+
+<section id="game" class="page hidden">
+    <div class="panel center">
+        <h2>◈ TIC TAC TOE</h2>
+        <p id="gameStatus">Player X's turn</p>
+        <div class="ttt-board" id="tttBoard"></div>
+        <br>
+        <button class="action" onclick="resetGame()">RESTART GAME</button>
+    </div>
+</section>
+
+<section id="profile" class="page hidden">
+    <div class="panel profile">
+        <h2>◈ CREATOR PROFILE</h2>
+        <div class="initial">N</div>
+        <h2 style="color:var(--green)">NEELESH BHATT</h2>
+        <p>Creator and developer of SHIVA AI.</p>
+        <p>Building technology with creativity and curiosity.</p>
+    </div>
+</section>
 </main>
 
 <footer>
-    <div class="free">FREE-FIRST AI INTERFACE · BUILT WITH OPEN TOOLS</div>
-    <div class="author">SHIVA AI BY NEELESH BHATT</div>
-    <div>GREEN MATRIX · BLUE NAVAL RADAR · BLACK SYSTEMS</div>
+    SHIVA AI © 2026 | CREATED BY NEELESH BHATT
 </footer>
 
 <script>
-
-/* LIVE INDIA DATE AND TIME */
-
-function updateClock() {
-    const now = new Date();
-
-    document.getElementById("liveTime").textContent =
-        new Intl.DateTimeFormat("en-IN", {
-            timeZone:"Asia/Kolkata",
-            hour:"2-digit",
-            minute:"2-digit",
-            second:"2-digit",
-            hour12:true
-        }).format(now);
-
-    document.getElementById("liveDate").textContent =
-        new Intl.DateTimeFormat("en-IN", {
-            timeZone:"Asia/Kolkata",
-            weekday:"long",
-            day:"2-digit",
-            month:"long",
-            year:"numeric"
-        }).format(now);
+/* PAGE NAVIGATION */
+function showPage(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+    document.getElementById(page).classList.remove("hidden");
 }
 
+/* LIVE INDIA DATE AND TIME */
+function updateClock() {
+    const now = new Date();
+    document.getElementById("clockTime").textContent =
+        new Intl.DateTimeFormat("en-IN", {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        }).format(now);
+
+    document.getElementById("clockDate").textContent =
+        new Intl.DateTimeFormat("en-IN", {
+            timeZone: "Asia/Kolkata",
+            weekday: "long",
+            day: "2-digit",
+            month: "long",
+            year: "numeric"
+        }).format(now);
+}
 updateClock();
-setInterval(updateClock,1000);
+setInterval(updateClock, 1000);
 
+/* AI CHAT */
+const chatBox = document.getElementById("chatBox");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+let speechEnabled = true;
 
-/* DECORATIVE MATRIX BACKGROUND */
+function addMessage(text, type) {
+    const div = document.createElement("div");
+    div.className = "message " + type;
+    div.textContent = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-(() => {
-    const canvas = document.getElementById("matrix");
-    const ctx = canvas.getContext("2d");
+async function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
 
-    if (!ctx) return;
+    messageInput.value = "";
+    addMessage("YOU: " + message, "user");
+    sendBtn.disabled = true;
+    sendBtn.textContent = "WAIT...";
 
-    const chars = "01アイウエオカキクケコSHIVA";
-    const fontSize = 14;
-    let width = 0;
-    let height = 0;
-    let drops = [];
-
-    function resize() {
-        const dpr = Math.min(window.devicePixelRatio || 1,2);
-
-        width = window.innerWidth;
-        height = window.innerHeight;
-
-        canvas.width = Math.floor(width*dpr);
-        canvas.height = Math.floor(height*dpr);
-
-        ctx.setTransform(dpr,0,0,dpr,0,0);
-
-        drops = Array.from(
-            {length:Math.ceil(width/fontSize)},
-            () => Math.random()*(height/fontSize)
-        );
-    }
-
-    function draw() {
-        ctx.fillStyle = "rgba(2,8,7,.12)";
-        ctx.fillRect(0,0,width,height);
-
-        ctx.fillStyle = "#00ff88";
-        ctx.font = fontSize+"px monospace";
-
-        for(let i=0;i<drops.length;i++) {
-            ctx.fillText(
-                chars[Math.floor(Math.random()*chars.length)],
-                i*fontSize,
-                drops[i]*fontSize
-            );
-
-            if(drops[i]*fontSize>height && Math.random()>.975) {
-                drops[i]=0;
-            } else {
-                drops[i]+=.45;
-            }
-        }
-    }
-
-    resize();
-    window.addEventListener("resize",resize);
-
-    if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setInterval(draw,80);
-    } else {
-        draw();
-    }
-})();
-
-
-/* CALCULATOR */
-
-(() => {
-    const display = document.getElementById("calcDisplay");
-    let expression = "";
-
-    function updateDisplay() {
-        display.value = expression || "0";
-    }
-
-    function calculate() {
-        if(!expression) return;
-
-        // Only allow calculator characters.
-        if(!/^[0-9+\-*/%.() ]+$/.test(expression)) {
-            display.value = "ERROR";
-            expression = "";
-            return;
-        }
-
-        try {
-            const result = Function('"use strict"; return ('+expression+')')();
-
-            if(typeof result !== "number" || !Number.isFinite(result)) {
-                throw new Error("Invalid calculation");
-            }
-
-            expression = String(Number(result.toPrecision(12)));
-            updateDisplay();
-        } catch(error) {
-            display.value = "ERROR";
-            expression = "";
-        }
-    }
-
-    document.querySelectorAll("[data-calc]").forEach(button => {
-        button.addEventListener("click",() => {
-            const value = button.dataset.calc;
-
-            if(value==="AC") {
-                expression="";
-                updateDisplay();
-                return;
-            }
-
-            if(value==="DEL") {
-                expression=expression.slice(0,-1);
-                updateDisplay();
-                return;
-            }
-
-            if(value==="=") {
-                calculate();
-                return;
-            }
-
-            if(value==="%") {
-                expression += "/100";
-            } else {
-                expression += value;
-            }
-
-            updateDisplay();
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message})
         });
-    });
-})();
 
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            throw new Error("Server did not return JSON. Check the Flask /api/chat route.");
+        }
 
-/* CHAT AND BROWSER VOICE */
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Server error " + response.status);
+        }
 
-const form = document.getElementById("chatForm");
-const input = document.getElementById("messageInput");
-const chatLog = document.getElementById("chatLog");
-const sendButton = document.getElementById("sendButton");
-const connection = document.getElementById("connection");
-const networkStatus = document.getElementById("networkStatus");
-const voiceButton = document.getElementById("voiceButton");
-const stopVoiceButton = document.getElementById("stopVoiceButton");
-const voiceStatus = document.getElementById("voiceStatus");
+        const reply = data.reply || data.response || "No response received.";
+        addMessage("SHIVA AI: " + reply, "bot");
 
+        if (speechEnabled && "speechSynthesis" in window) {
+            speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(reply);
+            utterance.lang = "en-IN";
+            speechSynthesis.speak(utterance);
+        }
+    } catch (error) {
+        addMessage("ERROR: " + error.message, "error");
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = "SEND";
+    }
+}
+
+sendBtn.addEventListener("click", sendMessage);
+messageInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") sendMessage();
+});
+
+/* SPEECH INPUT */
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
 let recognition = null;
-let voiceActive = false;
-let isRecognizing = false;
-let isSpeaking = false;
-let requestPending = false;
-let restartTimer = null;
+let listening = false;
 
-
-function addMessage(label,text,type="") {
-    const box = document.createElement("div");
-    box.className = "message "+type;
-
-    const heading = document.createElement("div");
-    heading.className = "message-label";
-    heading.textContent = label;
-
-    const content = document.createElement("div");
-    content.textContent = text;
-
-    box.append(heading,content);
-    chatLog.appendChild(box);
-    chatLog.scrollTop = chatLog.scrollHeight;
-
-    return content;
-}
-
-
-function speak(text) {
-    return new Promise(resolve => {
-        if(!("speechSynthesis" in window) || !text) {
-            resolve();
-            return;
-        }
-
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "en-IN";
-        utterance.rate = 1;
-        utterance.pitch = 1;
-
-        isSpeaking = true;
-
-        utterance.onend = () => {
-            isSpeaking = false;
-            resolve();
-        };
-
-        utterance.onerror = () => {
-            isSpeaking = false;
-            resolve();
-        };
-
-        window.speechSynthesis.speak(utterance);
-    });
-}
-
-
-function scheduleListening() {
-    clearTimeout(restartTimer);
-
-    if(!voiceActive || requestPending || isSpeaking) return;
-
-    restartTimer = setTimeout(() => {
-        if(voiceActive && !requestPending && !isSpeaking) {
-            startListening();
-        }
-    },600);
-}
-
-
-function startListening() {
-    if(!voiceActive || !recognition || isRecognizing ||
-       requestPending || isSpeaking) return;
-
-    try {
-        recognition.start();
-    } catch(error) {
-        voiceStatus.textContent =
-            "Preparing microphone… If needed, stop and restart voice chat.";
-    }
-}
-
-
-function stopVoice() {
-    voiceActive = false;
-    clearTimeout(restartTimer);
-
-    if(recognition) {
-        try {
-            recognition.stop();
-        } catch(error) {}
-    }
-
-    isRecognizing = false;
-
-    if("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-    }
-
-    isSpeaking = false;
-    voiceStatus.textContent = "Voice chat stopped.";
-    voiceButton.textContent = "🎤 START VOICE CHAT";
-}
-
-
-async function sendMessage(message,fromVoice=false) {
-    message = message.trim();
-
-    if(!message || requestPending) return;
-
-    requestPending = true;
-
-    addMessage(fromVoice?"YOU · VOICE":"YOU",message,"user");
-
-    if(!fromVoice) input.value = "";
-
-    sendButton.disabled = true;
-    sendButton.textContent = "THINKING...";
-    voiceStatus.textContent = fromVoice
-        ? "Processing your speech…"
-        : "AI is preparing a reply…";
-
-    const replyElement = addMessage("SHIVA CORE","Connecting to AI…");
-
-    try {
-        const response = await fetch("/api/chat",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({message})
-        });
-
-        // Check the response type before parsing JSON.
-        const contentType = response.headers.get("content-type") || "";
-
-        if(!contentType.includes("application/json")) {
-            throw new Error(
-                "The server returned HTML instead of JSON. Check that Flask is running and /api/chat exists."
-            );
-        }
-
-        const data = await response.json();
-
-        if(!response.ok) {
-            throw new Error(data.detail || data.error || "The AI request failed.");
-        }
-
-        const reply = String(data.reply || "The AI returned an empty response.");
-
-        replyElement.textContent = reply;
-        connection.textContent = "CONNECTED";
-        networkStatus.textContent = "AI REACHABLE";
-
-        if(voiceActive) {
-            voiceStatus.textContent = "SHIVA AI is speaking…";
-            await speak(reply);
-        }
-
-    } catch(error) {
-        replyElement.textContent =
-            "CONNECTION ERROR: "+error.message+
-            "\n\nCheck your Flask server, Render deployment and OpenRouter API key.";
-
-        const box = replyElement.closest(".message");
-
-        if(box) box.classList.add("error");
-
-        connection.textContent = "ERROR";
-        networkStatus.textContent = "CHECK SERVER";
-        voiceStatus.textContent = "AI request failed. You can try again.";
-
-    } finally {
-        requestPending = false;
-        sendButton.disabled = false;
-        sendButton.textContent = "SEND ↗";
-
-        chatLog.scrollTop = chatLog.scrollHeight;
-
-        if(voiceActive) {
-            voiceStatus.textContent = "Listening for your next question…";
-            scheduleListening();
-        }
-    }
-}
-
-
-form.addEventListener("submit",event => {
-    event.preventDefault();
-    sendMessage(input.value,false);
-});
-
-
-function configureRecognition() {
-    if(!SpeechRecognition) {
-        voiceStatus.textContent =
-            "Speech recognition is not supported in this browser. Try an updated Chrome browser.";
-        return false;
-    }
-
+if (SpeechRecognition) {
     recognition = new SpeechRecognition();
     recognition.lang = "en-IN";
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-        isRecognizing = true;
-        voiceStatus.textContent = "Listening… Speak now.";
-    };
 
     recognition.onresult = event => {
-        const result = event.results[event.results.length-1];
-
-        if(!result.isFinal) return;
-
-        const transcript = result[0].transcript.trim();
-
-        if(transcript && voiceActive && !requestPending) {
-            voiceStatus.textContent = "Heard: "+transcript;
-
-            try {
-                recognition.stop();
-            } catch(error) {}
-
-            sendMessage(transcript,true);
+        const result = event.results[event.results.length - 1];
+        if (result.isFinal) {
+            messageInput.value = result[0].transcript;
+            sendMessage();
         }
     };
 
     recognition.onerror = event => {
-        isRecognizing = false;
-
-        if(event.error==="not-allowed" ||
-           event.error==="service-not-allowed") {
-
-            voiceStatus.textContent =
-                "Microphone access was denied. Allow microphone access in browser settings.";
-
-            stopVoice();
-
-        } else if(event.error==="no-speech") {
-            voiceStatus.textContent = "Didn't hear anything. Listening again…";
-
-        } else if(event.error!=="aborted") {
-            voiceStatus.textContent =
-                "Voice recognition issue: "+event.error+". Try restarting voice chat.";
-        }
+        document.getElementById("voiceStatus").textContent =
+            "Voice error: " + event.error;
     };
 
     recognition.onend = () => {
-        isRecognizing = false;
-        scheduleListening();
+        if (listening) {
+            try { recognition.start(); } catch (e) {}
+        }
     };
-
-    return true;
 }
 
-
-voiceButton.addEventListener("click",() => {
-    if(voiceActive) return;
-
-    if(!("speechSynthesis" in window)) {
-        voiceStatus.textContent =
-            "Spoken replies are not supported in this browser.";
+document.getElementById("voiceBtn").addEventListener("click", () => {
+    if (!recognition) {
+        document.getElementById("voiceStatus").textContent =
+            "Speech recognition is not supported in this browser. Try Chrome.";
         return;
     }
-
-    if(!SpeechRecognition) {
-        voiceStatus.textContent =
-            "This browser doesn't support speech recognition. Try updated Chrome.";
-        return;
-    }
-
-    voiceActive = true;
-    voiceButton.textContent = "🎤 VOICE CHAT ACTIVE";
-    voiceStatus.textContent = "Starting microphone…";
-
-    if(!recognition && !configureRecognition()) {
-        voiceActive = false;
-        return;
-    }
-
-    startListening();
-});
-
-
-stopVoiceButton.addEventListener("click",stopVoice);
-
-
-window.addEventListener("pagehide",() => {
-    voiceActive = false;
-    clearTimeout(restartTimer);
-
-    if(recognition) {
-        try {
-            recognition.abort();
-        } catch(error) {}
-    }
-
-    if("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+    if (!listening) {
+        listening = true;
+        try { recognition.start(); } catch (e) {}
+        document.getElementById("voiceStatus").textContent = "Listening...";
+        document.getElementById("voiceBtn").textContent = "🎤 LISTENING";
     }
 });
 
+document.getElementById("stopVoiceBtn").addEventListener("click", () => {
+    listening = false;
+    if (recognition) recognition.stop();
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    document.getElementById("voiceStatus").textContent = "Voice stopped.";
+    document.getElementById("voiceBtn").textContent = "🎤 START VOICE";
+});
+
+document.getElementById("speakToggle").addEventListener("click", event => {
+    speechEnabled = !speechEnabled;
+    event.target.textContent = speechEnabled ? "🔊 SPEECH ON" : "🔇 SPEECH OFF";
+});
+
+/* CALCULATOR */
+const calcDisplay = document.getElementById("calcDisplay");
+let calcExpression = "";
+
+function calcInput(value) {
+    if (calcExpression.length > 45) return;
+    calcExpression += value;
+    calcDisplay.value = calcExpression;
+}
+function calcClear() {
+    calcExpression = "";
+    calcDisplay.value = "0";
+}
+function calcBack() {
+    calcExpression = calcExpression.slice(0, -1);
+    calcDisplay.value = calcExpression || "0";
+}
+function calcEquals() {
+    if (!calcExpression) return;
+    if (!/^[0-9+\-*/%.() ]+$/.test(calcExpression)) {
+        calcDisplay.value = "ERROR";
+        calcExpression = "";
+        return;
+    }
+    try {
+        const result = Function('"use strict"; return (' + calcExpression + ')')();
+        if (!Number.isFinite(result)) throw new Error("Invalid");
+        calcExpression = String(Number(result.toFixed(10)));
+        calcDisplay.value = calcExpression;
+    } catch (e) {
+        calcDisplay.value = "ERROR";
+        calcExpression = "";
+    }
+}
+
+/* TIC TAC TOE */
+let board = Array(9).fill("");
+let currentPlayer = "X";
+let gameOver = false;
+
+function renderGame() {
+    const container = document.getElementById("tttBoard");
+    container.innerHTML = "";
+
+    board.forEach((value, index) => {
+        const button = document.createElement("button");
+        button.textContent = value;
+        button.addEventListener("click", () => makeMove(index));
+        container.appendChild(button);
+    });
+}
+
+function makeMove(index) {
+    if (board[index] || gameOver) return;
+
+    board[index] = currentPlayer;
+    if (checkWinner(currentPlayer)) {
+        document.getElementById("gameStatus").textContent =
+            "Player " + currentPlayer + " wins!";
+        gameOver = true;
+    } else if (board.every(Boolean)) {
+        document.getElementById("gameStatus").textContent = "It's a draw!";
+        gameOver = true;
+    } else {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        document.getElementById("gameStatus").textContent =
+            "Player " + currentPlayer + "'s turn";
+    }
+    renderGame();
+}
+
+function checkWinner(player) {
+    const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+    ];
+    return wins.some(combo => combo.every(i => board[i] === player));
+}
+
+function resetGame() {
+    board = Array(9).fill("");
+    currentPlayer = "X";
+    gameOver = false;
+    document.getElementById("gameStatus").textContent = "Player X's turn";
+    renderGame();
+}
+renderGame();
 </script>
 
 </body>
