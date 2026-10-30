@@ -5,6 +5,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SHIVA AI | By Neelesh Bhatt</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
 <style>
 :root {
     --green:#00ff66;
@@ -94,13 +98,56 @@ input{background:#000;color:var(--green);border:1px solid var(--green);padding:1
 }
 .copyright-box h3{color:var(--green)}
 footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#8bc99d}
+
+/* BHARAT EXPLORER */
+.bharat-header{
+    text-align:center;
+    background:radial-gradient(circle at center,#16385a,#020817);
+    border:1px solid #d4a94d;
+    color:white;padding:28px 12px;
+}
+.bharat-header h2{
+    color:#ff9933;
+    font-size:clamp(25px,5vw,38px);
+    letter-spacing:3px;
+}
+.bharat-header p{color:#eee;letter-spacing:2px}
+.chakra{font-size:55px;color:#ff9933}
+.bharat-toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.bharat-button{
+    color:#fff;background:#172b42;border:1px solid #d4a94d;
+    padding:11px 16px;border-radius:6px;
+}
+.bharat-button:hover{background:#ff9933;color:#111}
+#bharatMap{
+    height:520px;width:100%;background:#071629;
+    border:1px solid #d4a94d;border-radius:10px;
+    overflow:hidden;z-index:1;
+}
+#bharatMap .leaflet-container{background:#071629}
+#bharatMap .leaflet-popup-content-wrapper,
+#bharatMap .leaflet-popup-tip{background:#fff;color:#111}
+.bharat-result{
+    padding:12px;margin:8px 0;border:1px solid #d4a94d;
+    border-radius:7px;background:#101e32;color:white;cursor:pointer;
+}
+.bharat-result:hover{background:#263b57}
+#districtInfo{color:white;line-height:1.8}
+#districtInfo h2{color:#ff9933}
+#districtInfo h3{color:#ffcc80}
+#districtSearch{width:100%;margin-bottom:12px}
+.bharat-note{color:#b7c6d8;font-size:12px;line-height:1.6}
+
 @media(max-width:500px){
     main{padding:9px}.panel{padding:13px}
     .ttt-board{grid-template-columns:repeat(3,75px)}
     .ttt-board button{height:75px}
+    #bharatMap{height:400px}
 }
 </style>
+
 </head>
+
 <body>
 
 <header>
@@ -116,9 +163,11 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
     <button onclick="showPage('game')">TIC TAC TOE</button>
     <button onclick="showPage('profile')">CREATOR</button>
     <button onclick="showPage('copyright')">COPYRIGHT</button>
+    <button onclick="showPage('bharat')">🇮🇳 BHARAT EXPLORER</button>
 </nav>
 
 <main>
+
 <section id="home" class="page">
     <div class="panel">
         <h2>◈ SYSTEM OVERVIEW</h2>
@@ -138,6 +187,8 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
         <h2>WELCOME TO SHIVA AI</h2>
         <p>Artificial Intelligence interface created by Neelesh Bhatt.</p>
         <button class="action" onclick="showPage('chat')">START AI CHAT</button>
+        <br><br>
+        <button class="bharat-button" onclick="showPage('bharat')">🇮🇳 EXPLORE BHARAT</button>
     </div>
 </section>
 
@@ -231,66 +282,112 @@ footer{text-align:center;padding:20px;border-top:1px solid var(--border);color:#
 
     <div class="copyright-box">
         <h3>Permitted Use</h3>
-        <p>
-            You may use this website for personal, educational,
-            and demonstration purposes.
-        </p>
-        <p>
-            Please do not copy, redistribute, or commercially reuse
-            original branding or content without permission from
-            the relevant rights holder.
-        </p>
+        <p>You may use this website for personal, educational,
+        and demonstration purposes.</p>
+        <p>Please do not copy, redistribute, or commercially reuse
+        original branding or content without permission from
+        the relevant rights holder.</p>
     </div>
 
     <div class="copyright-box">
         <h3>Third-Party Services</h3>
-        <p>
-            SHIVA AI may use third-party services and technologies
-            to provide AI responses and browser features. Those
-            services remain subject to their own terms and policies.
-        </p>
-        <p>
-            AI-generated responses may contain mistakes. Please
-            independently verify important information.
-        </p>
+        <p>SHIVA AI may use third-party services and technologies
+        to provide AI responses and browser features. Those
+        services remain subject to their own terms and policies.</p>
+        <p>AI-generated responses may contain mistakes. Please
+        independently verify important information.</p>
     </div>
 
     <div class="copyright-box">
         <h3>Contact</h3>
-        <p>
-            For questions about the original SHIVA AI website content
-            or permissions, contact the website creator.
-        </p>
+        <p>For questions about the original SHIVA AI website content
+        or permissions, contact the website creator.</p>
         <p><strong>Creator:</strong> Neelesh Bhatt</p>
     </div>
 
-    <p class="center small-label">
-        Last updated: 30 October 2026
-    </p>
+    <p class="center small-label">Last updated: 30 October 2026</p>
 </div>
 ```
 
 </section>
+
+<!-- BHARAT EXPLORER -->
+
+<section id="bharat" class="page hidden">
+
+```
+<div class="panel bharat-header">
+    <div class="chakra">☸</div>
+    <h2>BHARAT EXPLORER</h2>
+    <p>DISCOVER THE LAND OF DIVERSITY</p>
+    <p>28 STATES · 8 UNION TERRITORIES</p>
+</div>
+
+<div class="panel">
+    <div class="bharat-toolbar">
+        <button class="bharat-button" onclick="bharatHome()">🇮🇳 INDIA</button>
+        <button class="bharat-button" onclick="bharatBack()">← BACK</button>
+    </div>
+
+    <h2 id="bharatTitle">EXPLORE INDIA</h2>
+    <p id="bharatDescription">Select a state or Union Territory on the map.</p>
+
+    <div id="bharatMap"></div>
+
+    <p id="bharatStatus" class="small-label">
+        Map data will load when you open Bharat Explorer.
+    </p>
+
+    <p class="bharat-note">
+        Map boundaries are provided by external geographical datasets.
+        Boundaries and district coverage may vary by source and date.
+    </p>
+</div>
+
+<div class="panel">
+    <h2>◈ FIND A STATE OR DISTRICT</h2>
+    <input id="districtSearch" placeholder="Search state or district...">
+    <div id="bharatResults"></div>
+</div>
+
+<div class="panel" id="districtInfo">
+    <h2>◈ DISTRICT DISCOVERY</h2>
+    <p>Select a district on the map to explore it.</p>
+</div>
+```
+
+</section>
+
 </main>
 
 <footer>
     SHIVA AI © 2026 | CREATED BY NEELESH BHATT
 </footer>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
 /* PAGE NAVIGATION */
 function showPage(page) {
-    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".page").forEach(p =>
+        p.classList.add("hidden")
+    );
     document.getElementById(page).classList.remove("hidden");
+
+    if (page === "bharat") {
+        setTimeout(startBharatExplorer, 150);
+    }
 }
 
 /* LIVE INDIA DATE AND TIME */
 function updateClock() {
     const now = new Date();
+
     document.getElementById("clockTime").textContent =
         new Intl.DateTimeFormat("en-IN", {
             timeZone:"Asia/Kolkata",
-            hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true
+            hour:"2-digit",minute:"2-digit",second:"2-digit",
+            hour12:true
         }).format(now);
 
     document.getElementById("clockDate").textContent =
@@ -363,7 +460,9 @@ messageInput.addEventListener("keydown",event => {
 });
 
 /* SPEECH INPUT */
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
 let recognition = null;
 let listening = false;
 
@@ -382,7 +481,8 @@ if (SpeechRecognition) {
     };
 
     recognition.onerror = event => {
-        document.getElementById("voiceStatus").textContent = "Voice error: " + event.error;
+        document.getElementById("voiceStatus").textContent =
+            "Voice error: " + event.error;
     };
 
     recognition.onend = () => {
@@ -475,14 +575,16 @@ function makeMove(index) {
     board[index] = currentPlayer;
 
     if (checkWinner(currentPlayer)) {
-        document.getElementById("gameStatus").textContent = "Player " + currentPlayer + " wins!";
+        document.getElementById("gameStatus").textContent =
+            "Player " + currentPlayer + " wins!";
         gameOver = true;
     } else if (board.every(Boolean)) {
         document.getElementById("gameStatus").textContent = "It's a draw!";
         gameOver = true;
     } else {
         currentPlayer = currentPlayer === "X" ? "O" : "X";
-        document.getElementById("gameStatus").textContent = "Player " + currentPlayer + "'s turn";
+        document.getElementById("gameStatus").textContent =
+            "Player " + currentPlayer + "'s turn";
     }
     renderGame();
 }
@@ -504,6 +606,325 @@ function resetGame() {
     renderGame();
 }
 renderGame();
+
+/* =================================
+   BHARAT EXPLORER
+================================= */
+
+let bharatMap = null;
+let bharatLayer = null;
+let bharatLevel = "india";
+let bharatHistory = [];
+let selectedState = "";
+let searchFeatures = [];
+
+const INDIA_MAP_URL =
+"https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/india.geojson";
+
+const STATE_MAP_BASE =
+"https://raw.githubusercontent.com/udit-001/india-maps-data/main/geojson/states/";
+
+const stateNames = [
+"Andhra Pradesh","Arunachal Pradesh","Assam","Bihar",
+"Chhattisgarh","Goa","Gujarat","Haryana",
+"Himachal Pradesh","Jharkhand","Karnataka","Kerala",
+"Madhya Pradesh","Maharashtra","Manipur","Meghalaya",
+"Mizoram","Nagaland","Odisha","Punjab","Rajasthan",
+"Sikkim","Tamil Nadu","Telangana","Tripura",
+"Uttarakhand","Uttar Pradesh","West Bengal",
+"Andaman and Nicobar Islands","Chandigarh",
+"Dadra and Nagar Haveli and Daman and Diu",
+"Delhi","Jammu and Kashmir","Ladakh",
+"Lakshadweep","Puducherry"
+];
+
+function mapName(name) {
+    const special = {
+        "Andaman and Nicobar Islands":"andaman-and-nicobar-islands",
+        "Dadra and Nagar Haveli and Daman and Diu":
+            "dadra-and-nagar-haveli-and-daman-and-diu"
+    };
+
+    return special[name] ||
+        name.toLowerCase().replace(/ & /g,"-").replace(/ /g,"-");
+}
+
+function startBharatExplorer() {
+    if (!window.L) {
+        document.getElementById("bharatStatus").textContent =
+            "Map library could not load. Check your internet connection.";
+        return;
+    }
+
+    if (bharatMap) {
+        bharatMap.invalidateSize();
+        return;
+    }
+
+    bharatMap = L.map("bharatMap", {
+        zoomControl:true,
+        scrollWheelZoom:true
+    }).setView([22.5,82.5],4);
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution:"© OpenStreetMap contributors",
+            maxZoom:18
+        }
+    ).addTo(bharatMap);
+
+    loadIndiaMap();
+}
+
+function bharatStyle() {
+    return {
+        color:"#f2c66d",
+        weight:1.3,
+        fillColor:"#176b50",
+        fillOpacity:0.55
+    };
+}
+
+function bharatHome() {
+    bharatHistory = [];
+    bharatLevel = "india";
+    selectedState = "";
+    loadIndiaMap();
+}
+
+function bharatBack() {
+    if (!bharatHistory.length) {
+        bharatHome();
+        return;
+    }
+
+    const previous = bharatHistory.pop();
+
+    if (previous.level === "india") {
+        bharatLevel = "india";
+        selectedState = "";
+        loadIndiaMap();
+    } else {
+        selectedState = previous.state;
+        bharatLevel = "state";
+        loadStateMap(previous.state,true);
+    }
+}
+
+function loadIndiaMap() {
+    bharatLevel = "india";
+
+    document.getElementById("bharatTitle").textContent =
+        "🇮🇳 EXPLORE INDIA";
+
+    document.getElementById("bharatDescription").textContent =
+        "Select a state or Union Territory.";
+
+    document.getElementById("districtInfo").innerHTML =
+        "<h2>◈ DISTRICT DISCOVERY</h2><p>Select a district on the map.</p>";
+
+    loadGeoJSON(INDIA_MAP_URL,"india");
+}
+
+function loadStateMap(state,fromBack=false) {
+    if (!fromBack) {
+        bharatHistory.push({level:"india",state:""});
+    }
+
+    selectedState = state;
+    bharatLevel = "state";
+
+    document.getElementById("bharatTitle").textContent =
+        state.toUpperCase();
+
+    document.getElementById("bharatDescription").textContent =
+        "Select a district to explore it.";
+
+    document.getElementById("districtInfo").innerHTML =
+        "<h2>◈ " + escapeHTML(state) + "</h2><p>Select a district on the map.</p>";
+
+    const url = STATE_MAP_BASE + mapName(state) + ".geojson";
+    loadGeoJSON(url,"state");
+}
+
+async function loadGeoJSON(url,level) {
+    const status = document.getElementById("bharatStatus");
+    status.textContent = "Loading geographical data...";
+
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Map data was not found at the configured address.");
+        }
+
+        const data = await response.json();
+
+        if (bharatLayer) {
+            bharatMap.removeLayer(bharatLayer);
+        }
+
+        searchFeatures = [];
+
+        bharatLayer = L.geoJSON(data,{
+            style:bharatStyle,
+
+            onEachFeature:function(feature,layer) {
+                const props = feature.properties || {};
+
+                const name =
+                    props.name ||
+                    props.NAME ||
+                    props.ST_NM ||
+                    props.district ||
+                    props.DISTRICT ||
+                    props.state ||
+                    props.STATE ||
+                    props.dtname ||
+                    props.DTNAME ||
+                    "Unknown region";
+
+                searchFeatures.push({
+                    name:name,
+                    feature:feature,
+                    level:level
+                });
+
+                layer.bindTooltip(escapeHTML(name));
+
+                layer.on("click",function() {
+                    if (level === "india") {
+                        const match = stateNames.find(item =>
+                            item.toLowerCase() === name.toLowerCase()
+                        );
+
+                        if (match) {
+                            loadStateMap(match);
+                        } else {
+                            showDistrictInfo(name);
+                        }
+                    } else {
+                        showDistrictInfo(name);
+                    }
+                });
+
+                layer.on("mouseover",function() {
+                    layer.setStyle({
+                        fillColor:"#ff9933",
+                        fillOpacity:0.85,
+                        weight:2
+                    });
+                });
+
+                layer.on("mouseout",function() {
+                    bharatLayer.resetStyle(layer);
+                });
+            }
+        }).addTo(bharatMap);
+
+        const bounds = bharatLayer.getBounds();
+
+        if (bounds.isValid()) {
+            bharatMap.fitBounds(bounds,{padding:[15,15]});
+        }
+
+        status.textContent = level === "india"
+            ? "India map loaded. Select a state or Union Territory."
+            : "State map loaded. Select a district.";
+
+        renderSearchResults("");
+
+    } catch(error) {
+        status.textContent =
+            "Could not load this map: " + error.message;
+
+        console.error("Bharat Explorer map error:",error);
+    }
+}
+
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g,char => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+    })[char]);
+}
+
+function showDistrictInfo(district) {
+    const box = document.getElementById("districtInfo");
+
+    box.innerHTML = `
+        <h2>🇮🇳 ${escapeHTML(district)}</h2>
+        <p><strong>State / UT:</strong> ${escapeHTML(selectedState || "India")}</p>
+
+        <h3>Famous places</h3>
+        <p>Verified tourist attractions for this district will be added here.</p>
+
+        <h3>Local food</h3>
+        <p>Verified local dishes and traditional cuisine will be added here.</p>
+
+        <h3>Culture and festivals</h3>
+        <p>Local traditions, celebrations and heritage will be added here.</p>
+
+        <h3>Famous crafts and products</h3>
+        <p>Verified local crafts and products will be added here.</p>
+
+        <p class="bharat-note">
+        District facts are not yet available in this version.
+        They should be researched and verified before publication.
+        </p>
+    `;
+
+    box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function renderSearchResults(query) {
+    const container = document.getElementById("bharatResults");
+    const q = query.toLowerCase().trim();
+
+    const results = searchFeatures.filter(item =>
+        item.name.toLowerCase().includes(q)
+    ).slice(0,40);
+
+    container.innerHTML = "";
+
+    results.forEach(item => {
+        const button = document.createElement("button");
+        button.className = "bharat-result";
+        button.style.width = "100%";
+        button.style.textAlign = "left";
+        button.textContent = "📍 " + item.name;
+
+        button.addEventListener("click",() => {
+            if (item.level === "india") {
+                const match = stateNames.find(state =>
+                    state.toLowerCase() === item.name.toLowerCase()
+                );
+                if (match) loadStateMap(match);
+                else showDistrictInfo(item.name);
+            } else {
+                showDistrictInfo(item.name);
+            }
+        });
+
+        container.appendChild(button);
+    });
+
+    if (!results.length) {
+        container.textContent = q
+            ? "No matching regions in the currently loaded map."
+            : "Map results will appear here.";
+    }
+}
+
+document.getElementById("districtSearch")
+.addEventListener("input",function() {
+    renderSearchResults(this.value);
+});
+
 </script>
 
 </body>
