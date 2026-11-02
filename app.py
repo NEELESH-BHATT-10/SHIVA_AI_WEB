@@ -159,19 +159,31 @@ def collect_rings(geometry):
 def make_map_path(ring, min_lon, max_lon, min_lat, max_lat):
     points = []
 
+    lon_range = max(max_lon - min_lon, 0.000001)
+    lat_range = max(max_lat - min_lat, 0.000001)
+
+    width = 900
+    height = 800
+
+    scale = min(840 / lon_range, 740 / lat_range)
+
+    offset_x = (width - lon_range * scale) / 2
+    offset_y = (height - lat_range * scale) / 2
+
     for coordinate in ring:
         if len(coordinate) < 2:
             continue
 
         lon, lat = coordinate[0], coordinate[1]
-        x = 30 + ((lon - min_lon) / (max_lon - min_lon)) * 840
-        y = 30 + ((max_lat - lat) / (max_lat - min_lat)) * 840
+        x = offset_x + (lon - min_lon) * scale
+        y = offset_y + (max_lat - lat) * scale
         points.append((x, y))
 
     if len(points) < 3:
         return ""
 
     commands = [f"M {points[0][0]:.2f} {points[0][1]:.2f}"]
+
     for x, y in points[1:]:
         commands.append(f"L {x:.2f} {y:.2f}")
 
