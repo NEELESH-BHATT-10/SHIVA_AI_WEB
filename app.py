@@ -17,7 +17,26 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 INDIA_GEOJSON_URL = "https://raw.githubusercontent.com/geohacker/india/master/state/india_state.geojson"
 MODEL = "openrouter/free"
+# -----------------------------------
+# FUNNY COMEBACKS
+# -----------------------------------
 
+def get_funny_comeback(message):
+    text = message.lower().strip()
+
+    funny_phrases = [
+        "potty khale", "potty kha le",
+        "tatti khale", "tatti kha le",
+        "eat shit", "eat poop",
+        "gu khale", "gū khale",
+        "gobar khale", "gobar kha le"
+    ]
+
+    for phrase in funny_phrases:
+        if phrase in text:
+            return "Tu khale 😂"
+
+    return None
 # -----------------------------
 
 # CREATOR IDENTIFICATION
@@ -78,7 +97,12 @@ def chat():
 
         if not message:
             return jsonify({"reply": "Please enter a message."}), 400
+        comeback = get_funny_comeback(message)
 
+        if comeback:
+            return jsonify({
+                "reply": comeback
+            })
         if is_creator_question(message):
             return jsonify({"reply": "SHIVA AI was created by Neelesh Bhatt."})
 
